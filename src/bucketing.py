@@ -16,6 +16,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 
+from src.uncertainty import wilson_interval
+
 
 def partition_and_sum(
     revenues: np.ndarray,
@@ -225,24 +227,34 @@ def run_null_simulations(
         lvl_str = f"{k} (User Level)" if k >= n_a else f"{k} Buckets"
         sub_mwu = df_null[(df_null["K"] == k) & (df_null["test"] == "Mann-Whitney U")]
         if len(sub_mwu) > 0:
+            rejects = int(sub_mwu["rejected"].sum())
+            ci_low, ci_high = wilson_interval(rejects, len(sub_mwu))
             summary_rows.append({
                 "Aggregation Level": lvl_str,
                 "K": k,
                 "Test": "Mann-Whitney U",
                 "Repetitions": len(sub_mwu),
+                "Rejections": rejects,
                 "False Positive Rate": float(sub_mwu["rejected"].mean()),
+                "95% CI Lower": ci_low,
+                "95% CI Upper": ci_high,
                 "Mean p-value": float(sub_mwu["p_value"].mean()),
                 "Median p-value": float(sub_mwu["p_value"].median()),
             })
         if k < n_a:
             sub_w = df_null[(df_null["K"] == k) & (df_null["test"] == "Welch t-test")]
             if len(sub_w) > 0:
+                rejects = int(sub_w["rejected"].sum())
+                ci_low, ci_high = wilson_interval(rejects, len(sub_w))
                 summary_rows.append({
                     "Aggregation Level": lvl_str,
                     "K": k,
                     "Test": "Welch t-test",
                     "Repetitions": len(sub_w),
+                    "Rejections": rejects,
                     "False Positive Rate": float(sub_w["rejected"].mean()),
+                    "95% CI Lower": ci_low,
+                    "95% CI Upper": ci_high,
                     "Mean p-value": float(sub_w["p_value"].mean()),
                     "Median p-value": float(sub_w["p_value"].median()),
                 })
@@ -263,46 +275,68 @@ def plot_figure_3_null_pvalues(df_null: pd.DataFrame, out_path: Path) -> None:
 
     mwu_rates = []
     welch_rates = []
+    mwu_lowers, mwu_uppers = [], []
+    welch_lowers, welch_uppers = [], []
 
     for k in levels:
         sub_m = df_null[(df_null["K"] == k) & (df_null["test"] == "Mann-Whitney U")]
-        mwu_rates.append(sub_m["rejected"].mean() if len(sub_m) > 0 else 0.0)
+        rate_m = float(sub_m["rejected"].mean()) if len(sub_m) > 0 else 0.0
+        low_m, high_m = wilson_interval(int(sub_m["rejected"].sum()), len(sub_m))
+        mwu_rates.append(rate_m)
+        mwu_lowers.append(low_m)
+        mwu_uppers.append(high_m)
 
         sub_w = df_null[(df_null["K"] == k) & (df_null["test"] == "Welch t-test")]
-        welch_rates.append(sub_w["rejected"].mean() if len(sub_w) > 0 else np.nan)
+        if len(sub_w) > 0:
+            rate_w = float(sub_w["rejected"].mean())
+            low_w, high_w = wilson_interval(int(sub_w["rejected"].sum()), len(sub_w))
+        else:
+            rate_w, low_w, high_w = np.nan, np.nan, np.nan
+        welch_rates.append(rate_w)
+        welch_lowers.append(low_w)
+        welch_uppers.append(high_w)
 
     fig, ax = plt.subplots(figsize=(11.5, 4.8))
 
     # Plot bars: MWU shifted left, Welch shifted right
-    bars_mwu = ax.bar(x_indices - bar_width / 2, mwu_rates, width=bar_width, color="#d95f02", edgecolor="black", alpha=0.85, label="Mann-Whitney U (Main Test)")
+    mwu_errors = np.array([np.array(mwu_rates) - mwu_lowers, np.array(mwu_uppers) - mwu_rates])
+    bars_mwu = ax.bar(x_indices - bar_width / 2, mwu_rates, width=bar_width, color="#d95f02", edgecolor="black", alpha=0.85, label="Mann-Whitney U (Main Test)", yerr=mwu_errors, capsize=3)
     # For Welch, only plot for K < user_k
     valid_welch_idx = [i for i, r in enumerate(welch_rates) if not np.isnan(r)]
+    valid_welch_rates = np.array([welch_rates[i] for i in valid_welch_idx])
+    welch_errors = np.array([
+        valid_welch_rates - [welch_lowers[i] for i in valid_welch_idx],
+        [welch_uppers[i] for i in valid_welch_idx] - valid_welch_rates,
+    ])
     bars_welch = ax.bar(
         [x_indices[i] + bar_width / 2 for i in valid_welch_idx],
-        [welch_rates[i] for i in valid_welch_idx],
+        valid_welch_rates,
         width=bar_width,
         color="#2b5c8f",
         edgecolor="black",
         alpha=0.85,
         label="Welch t-test (Buckets only)",
+        yerr=welch_errors,
+        capsize=3,
     )
 
     # Reference line at nominal alpha = 0.05
     ax.axhline(0.05, color="red", linestyle="--", linewidth=1.6, label="Nominal alpha = 0.05")
 
-    for bar in bars_mwu:
+    for bar, upper in zip(bars_mwu, mwu_uppers):
         h = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2, h + 0.003, f"{h:.2f}", ha="center", va="bottom", fontsize=8, fontweight="bold", color="#a63603")
-    for bar in bars_welch:
+        ax.text(bar.get_x() + bar.get_width() / 2, upper + 0.003, f"{h:.2f}", ha="center", va="bottom", fontsize=8, fontweight="bold", color="#a63603")
+    for bar, idx in zip(bars_welch, valid_welch_idx):
         h = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2, h + 0.003, f"{h:.2f}", ha="center", va="bottom", fontsize=8, fontweight="bold", color="#08519c")
+        ax.text(bar.get_x() + bar.get_width() / 2, welch_uppers[idx] + 0.003, f"{h:.2f}", ha="center", va="bottom", fontsize=8, fontweight="bold", color="#08519c")
 
     ax.set_xticks(x_indices)
     ax.set_xticklabels(x_labels, fontsize=9.0)
     ax.set_xlabel("Number of Buckets (K) Growing Monotonically", fontsize=11, fontweight="bold")
     ax.set_ylabel("Empirical False Positive Rate (Type I Error)", fontsize=11, fontweight="bold")
-    ax.set_title("Figure 3: Null False-Positive Rates across Fresh A/B Splits (Target = 0.05)", fontsize=12, fontweight="bold")
-    ax.set_ylim(0, max(0.12, max(mwu_rates + [r for r in welch_rates if not np.isnan(r)]) + 0.03))
+    ax.set_title("Figure 3: Null False-Positive Rates (95% Wilson CIs; Target = 0.05)", fontsize=12, fontweight="bold")
+    valid_uppers = mwu_uppers + [welch_uppers[i] for i in valid_welch_idx]
+    ax.set_ylim(0, max(0.20, max(valid_uppers) + 0.035))
     ax.grid(True, alpha=0.3, axis="y")
     ax.legend(loc="upper right", fontsize=9.5)
 

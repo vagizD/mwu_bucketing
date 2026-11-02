@@ -2,29 +2,12 @@
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, Any
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy import stats
 
-
-def wilson_interval(k: int, n: int, confidence: float = 0.95) -> Tuple[float, float]:
-    """Calculate the Wilson score interval for a binomial proportion."""
-    if n <= 0:
-        return 0.0, 0.0
-    z = stats.norm.ppf(1 - (1 - confidence) / 2)
-    p = k / n
-    denominator = 1 + z**2 / n
-    centre_adjusted_probability = (p + z**2 / (2 * n)) / denominator
-    half_width = (z * np.sqrt((p * (1 - p) + z**2 / (4 * n)) / n)) / denominator
-    lower = max(0.0, float(centre_adjusted_probability - half_width))
-    upper = min(1.0, float(centre_adjusted_probability + half_width))
-    if k == 0:
-        lower = 0.0
-    if k == n:
-        upper = 1.0
-    return lower, upper
+from src.uncertainty import wilson_interval
 
 
 def plot_distribution_comparison(

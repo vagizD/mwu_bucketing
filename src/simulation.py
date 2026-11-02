@@ -7,7 +7,7 @@ Fulfills Steps 4, 5, and 6 of pipeline:
 """
 
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Sequence
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ from matplotlib.ticker import FixedLocator, FixedFormatter
 
 from src.config import TreatmentConfig, BucketsConfig
 from src.bucketing import partition_and_sum, run_welch_test, run_mwu_test
+from src.uncertainty import wilson_interval
 from src.treatment import generate_treatment
 
 
@@ -236,13 +237,18 @@ def run_alternative_simulations(
     grouped = df_alt.groupby(["delta", "K", "level_label", "test"])
     for (d, k, lvl, tst), grp in grouped:
         disp_name = f"{k} (User Level)" if k >= n_users else f"{k} Buckets"
+        rejects = int(grp["rejected"].sum())
+        ci_low, ci_high = wilson_interval(rejects, len(grp))
         summary_rows.append({
             "Target Uplift (delta)": d,
             "K": k,
             "Aggregation Level": disp_name,
             "Test": tst,
             "Repetitions": len(grp),
+            "Rejections": rejects,
             "Empirical Power": float(grp["rejected"].mean()),
+            "95% CI Lower": ci_low,
+            "95% CI Upper": ci_high,
             "Mean p-value": float(grp["p_value"].mean()),
             "Median p-value": float(grp["p_value"].median()),
             "Mean Realized Uplift": float(grp["observed_uplift"].mean()),
@@ -252,8 +258,32 @@ def run_alternative_simulations(
     return df_table_5, df_alt
 
 
+def rejection_curve_with_wilson(
+    df: pd.DataFrame, levels: Sequence[float], group_col: str = "K"
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return rejection rates and 95% Wilson bounds, aligned with group values.
+
+    Missing groups are represented by NaN, never fabricated as zero power.
+    """
+    grouped = df.groupby(group_col)["rejected"].agg(["sum", "count"])
+    rates, lowers, uppers = [], [], []
+    for k in levels:
+        if k not in grouped.index:
+            rates.append(np.nan)
+            lowers.append(np.nan)
+            uppers.append(np.nan)
+            continue
+        n = int(grouped.loc[k, "count"])
+        rejects = int(grouped.loc[k, "sum"])
+        lower, upper = wilson_interval(rejects, n)
+        rates.append(rejects / n)
+        lowers.append(lower)
+        uppers.append(upper)
+    return np.asarray(rates), np.asarray(lowers), np.asarray(uppers)
+
+
 def plot_figure_5_rejection_vs_delta(df_alt: pd.DataFrame, out_path: Path) -> None:
-    """Generate Figure 5: Bucket Count (K) vs Empirical Rejection Rate (Power) per delta."""
+    """Generate Figure 5: Power by K, with 95% Wilson confidence bands."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     deltas = sorted(df_alt["delta"].unique())
@@ -267,13 +297,15 @@ def plot_figure_5_rejection_vs_delta(df_alt: pd.DataFrame, out_path: Path) -> No
     for d, color in zip(deltas, colors):
         # MWU across all K (including User Level)
         sub_m = df_alt[(df_alt["delta"] == d) & (df_alt["test"] == "Mann-Whitney U")]
-        rates_m = sub_m.groupby("K")["rejected"].mean().reindex(levels_all, fill_value=0.0)
-        ax_mwu.plot(levels_all, rates_m.values, "o-", color=color, linewidth=2, markersize=5.5, label=f"{d:+.1%}")
+        rates_m, lower_m, upper_m = rejection_curve_with_wilson(sub_m, levels_all)
+        ax_mwu.plot(levels_all, rates_m, "o-", color=color, linewidth=2, markersize=5.5, label=f"{d:+.1%}")
+        ax_mwu.fill_between(levels_all, lower_m, upper_m, color=color, alpha=0.09, linewidth=0)
 
         # Welch across K < User Level
         sub_w = df_alt[(df_alt["delta"] == d) & (df_alt["test"] == "Welch t-test")]
-        rates_w = sub_w.groupby("K")["rejected"].mean().reindex(levels_welch, fill_value=0.0)
-        ax_welch.plot(levels_welch, rates_w.values, "s-", color=color, linewidth=2, markersize=5.5, label=f"{d:+.1%}")
+        rates_w, lower_w, upper_w = rejection_curve_with_wilson(sub_w, levels_welch)
+        ax_welch.plot(levels_welch, rates_w, "s-", color=color, linewidth=2, markersize=5.5, label=f"{d:+.1%}")
+        ax_welch.fill_between(levels_welch, lower_w, upper_w, color=color, alpha=0.09, linewidth=0)
 
     ax_mwu.axhline(0.80, color="red", linestyle="--", linewidth=1.4, label="80% Target Power")
     ax_welch.axhline(0.80, color="red", linestyle="--", linewidth=1.4, label="80% Target Power")
@@ -293,7 +325,7 @@ def plot_figure_5_rejection_vs_delta(df_alt: pd.DataFrame, out_path: Path) -> No
     ax_welch.grid(True, alpha=0.3, which="both")
     ax_welch.legend(loc="upper right", fontsize=8.5, title="Uplift")
 
-    plt.suptitle("Figure 5: Empirical Power vs. Number of Buckets Across Target Uplifts", fontsize=13, fontweight="bold", y=1.02)
+    plt.suptitle("Figure 5: Empirical Power by K (Shading = 95% Wilson CI)", fontsize=13, fontweight="bold", y=1.02)
     plt.tight_layout()
     plt.savefig(out_path, dpi=160, bbox_inches="tight")
     plt.close()
@@ -426,9 +458,10 @@ def compute_table_6_mde_and_figure_7(
 
     for idx, (k, color) in enumerate(zip(highlight_k, colors)):
         sub = df_alt[(df_alt["K"] == k) & (df_alt["test"] == "Mann-Whitney U")]
-        powers = sub.groupby("delta")["rejected"].mean().reindex(deltas, fill_value=0.0).values
+        powers, lowers, uppers = rejection_curve_with_wilson(sub, deltas, group_col="delta")
         label_txt = f"MWU (User Level, K={k})" if k == user_k else f"MWU (K={k})"
         ax.plot(deltas, powers, "o-", color=color, linewidth=2.2, markersize=6, label=label_txt)
+        ax.fill_between(deltas, lowers, uppers, color=color, alpha=0.09, linewidth=0)
 
     ax.axhline(target_power, color="red", linestyle="--", linewidth=1.5, label=f"Target Power ({int(target_power*100)}%)")
     ax.set_xscale("log")
@@ -441,7 +474,7 @@ def compute_table_6_mde_and_figure_7(
 
     ax.set_xlabel("Target Relative Revenue Uplift (delta, log scale)", fontsize=11, fontweight="bold")
     ax.set_ylabel("Empirical Power (Rejection Rate under H1)", fontsize=11, fontweight="bold")
-    ax.set_title("Figure 7: Empirical Power Curves for Mann-Whitney U Across K", fontsize=12, fontweight="bold")
+    ax.set_title("Figure 7: Mann-Whitney U Power by K (Shading = 95% Wilson CI)", fontsize=12, fontweight="bold")
     ax.set_ylim(-0.02, 1.05)
     ax.grid(True, alpha=0.4, which="major", linestyle=":")
     ax.legend(loc="lower right", fontsize=9.5)
