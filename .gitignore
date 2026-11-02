@@ -1,0 +1,20 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Raw and large processed datasets (do not commit large raw files)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
