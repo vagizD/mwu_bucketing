@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "=========================================================="
-echo "Running A/B Testing Study Smoke Test"
+echo "Running Bucketing & Tests Smoke Test"
 echo "=========================================================="
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,8 +21,8 @@ fi
 echo "1. Running unit tests..."
 PYTHONPATH=. "${PYTEST_EXEC}" tests/ -v
 
-echo "2. Generating synthetic smoke test dataset..."
-PYTHONPATH=. "${PYTHON_EXEC}" src/prepare_data.py --smoke
+echo "2. Running end-to-end smoke test..."
+PYTHONPATH=. "${PYTHON_EXEC}" run_pipeline.py --smoke-test
 
 echo "=========================================================="
 echo "Smoke test completed successfully!"

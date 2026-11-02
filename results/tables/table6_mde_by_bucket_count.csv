@@ -1,0 +1,16 @@
+Aggregation Level,K,Test,Target Power,Estimated MDE,Distribution Suitability
+10 Buckets,10,Mann-Whitney U (Main),0.8,2.70%,Continuous bucket sums eliminate zero rank-ties
+10 Buckets,10,Welch t-test,0.8,2.45%,"Normal (CLT bell-shaped, p > 0.05)"
+50 Buckets,50,Mann-Whitney U (Main),0.8,2.43%,Continuous bucket sums eliminate zero rank-ties
+50 Buckets,50,Welch t-test,0.8,2.25%,"Normal (CLT bell-shaped, p > 0.05)"
+100 Buckets,100,Mann-Whitney U (Main),0.8,2.26%,Continuous bucket sums eliminate zero rank-ties
+100 Buckets,100,Welch t-test,0.8,2.21%,"Normal (CLT bell-shaped, p > 0.05)"
+500 Buckets,500,Mann-Whitney U (Main),0.8,2.48%,Continuous bucket sums eliminate zero rank-ties
+500 Buckets,500,Welch t-test,0.8,2.24%,"Non-normal (skewness persists, p < 0.05)"
+1000 Buckets,1000,Mann-Whitney U (Main),0.8,2.27%,Continuous bucket sums eliminate zero rank-ties
+1000 Buckets,1000,Welch t-test,0.8,2.23%,"Non-normal (skewness persists, p < 0.05)"
+5000 Buckets,5000,Mann-Whitney U (Main),0.8,2.45%,Continuous bucket sums eliminate zero rank-ties
+5000 Buckets,5000,Welch t-test,0.8,2.23%,"Non-normal (skewness persists, p < 0.05)"
+10000 Buckets,10000,Mann-Whitney U (Main),0.8,2.73%,Continuous bucket sums eliminate zero rank-ties
+10000 Buckets,10000,Welch t-test,0.8,2.23%,"Non-normal (skewness persists, p < 0.05)"
+100000 (User Level),100000,Mann-Whitney U (Main),0.8,> 5.0%,Severe zero ties degrade rank tests

@@ -1,0 +1,40 @@
+random_seed = 42
+
+[data]
+transactions_path = "data/transactions_train.csv"
+customers_path = "data/customers.csv"
+observation_start = "2019-09-01"
+observation_end = "2019-09-30"
+max_users = 200000            # 100,000 users per arm (large-scale A/B population)
+include_zero_revenue_users = true
+
+[ab]
+control_share = 0.5           # A/B split (100,000 in A, 100,000 in B)
+keep_ab_split_fixed = true
+
+[buckets]
+counts = [10, 50, 100, 500, 1000, 5000, 10000, 100000]
+include_user_level = true
+shuffle_within_group = true
+
+[treatment]
+enabled = true
+selection_strategy = "activity_weighted"   # alternatives: uniform
+activity_smoothing_epsilon = 0.01          # smoothed: weight_i = count_i + epsilon
+price_sampling = "empirical"               # sample from observed prices
+condition_on_activity = false              # optional extension
+uplifts = [0.005, 0.010, 0.015, 0.020, 0.023, 0.026, 0.030, 0.050] # relative revenue uplifts
+m_count_model = "poisson"
+
+[simulation]
+null_repetitions = 50
+alt_repetitions = 20
+significance_level = 0.05
+power_target = 0.80
+mde_targets = [0.01, 0.015, 0.02, 0.03]
+
+[output]
+results_dir = "results"
+plots_dir = "results/plots"
+tables_dir = "results/tables"
+report_path = "result.md"
