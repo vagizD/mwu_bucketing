@@ -9,6 +9,11 @@ __pycache__/
 *$py.class
 .pytest_cache/
 
+# Local experiment configuration and scratch outputs
+conf.local.toml
+local_results/
+local_result.md
+
 # Raw and large processed datasets (do not commit large raw files)
 data/raw/*
 !data/raw/.gitkeep

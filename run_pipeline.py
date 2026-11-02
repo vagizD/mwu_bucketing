@@ -312,6 +312,8 @@ def generate_result_report(
 #### Table 3. Null False-Positive Rates across Fresh A/B Splits (Nominal $\\alpha = 0.05$)
 {to_markdown_table(table3_df)}
 
+*The 95% Wilson confidence intervals quantify uncertainty from the {cfg.simulation.null_repetitions} null repetitions. They are not proof that the true false-positive rate equals 5%.*
+
 #### Figure 3. Null False-Positive Rates Ordered Monotonically by Bucket Count K
 ![Figure 3: Null Rejection Rates]({fig3_path.as_posix()})
 
@@ -346,11 +348,14 @@ def generate_result_report(
 #### Table 5. Empirical Power and Realized Uplift Summary
 {to_markdown_table(table5_df)}
 
+*The 95% Wilson confidence intervals quantify uncertainty across the {cfg.simulation.alt_repetitions} treatment draws for each configuration. Because the alternative simulations keep one A/B split fixed, these intervals do not capture variation across different randomized splits.*
+
 #### Figure 5. Empirical Power vs. Number of Buckets Across Target Uplifts
 ![Figure 5: Power vs Bucket Count]({fig5_path.as_posix()})
 
 **Interpretation of Figure 5**:
 - **Visual Rule**: We need empirical power to be **above the red line** ($\\ge 80\\%$ target power) for dependable detection under $H_1$.
+- **Uncertainty**: The translucent bands show 95% Wilson intervals. Compare both point estimates and uncertainty before selecting a bucket count.
 - At marginal uplifts ($+2.0\\%$ to $+2.6\\%$), an inverted-U shape is visible: only optimal bucket counts cross above $80\\%$.
 
 #### Figure 6. Median Test p-Value vs. Number of Buckets Across Target Uplifts
@@ -372,6 +377,7 @@ def generate_result_report(
 
 **Interpretation of Figure 7**:
 - **Visual Rule**: We need power curves to cross **above the red line** (>= 80%). The x-intercept where each curve crosses 80% is its **Minimum Detectable Effect (MDE)**.
+- **Uncertainty**: Shaded Wilson intervals indicate how precise each power estimate is with the configured number of repetitions. MDE interpolation itself does not include a confidence interval.
 
 """
 
@@ -391,6 +397,7 @@ def generate_result_report(
 ## 6. Limitations
 1. **Synthetic Intervention**: Additions in Group B are sampled from empirical transactions; true behavioral responses in production may differ.
 2. **Static Window**: Analysis reflects a 30-day snapshot; longer observation windows may have lower zero-revenue fractions.
+3. **Monte Carlo Precision**: Wilson intervals cover the finite number of treatment draws, conditional on one fixed A/B split. More repetitions and fresh splits are needed for robust, unconditional power and MDE estimates.
 
 ---
 

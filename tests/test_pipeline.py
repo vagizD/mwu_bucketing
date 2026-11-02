@@ -18,6 +18,8 @@ from src.config import load_pipeline_config, PipelineConfig, TreatmentConfig
 from src.data_loader import load_and_prepare_data
 from src.treatment import generate_treatment
 from src.bucketing import partition_and_sum, run_welch_test, run_mwu_test, compute_table_2_diagnostics
+from src.uncertainty import wilson_interval
+from src.simulation import rejection_curve_with_wilson
 
 
 @pytest.fixture
@@ -142,3 +144,34 @@ def test_mean_uplift_matches_delta_in_expectation():
 
     mean_realized = float(np.mean(uplifts))
     assert np.isclose(mean_realized, delta, rtol=0.10)
+
+
+def test_wilson_interval_handles_extreme_and_midrange_counts():
+    """Intervals should be bounded even when all or none of the trials reject."""
+    zero_lower, zero_upper = wilson_interval(0, 20)
+    all_lower, all_upper = wilson_interval(20, 20)
+    middle_lower, middle_upper = wilson_interval(18, 20)
+
+    assert zero_lower == 0.0
+    assert 0 < zero_upper < 0.20
+    assert 0.80 < all_lower < 1.0
+    assert all_upper == 1.0
+    assert middle_lower < 0.90 < middle_upper
+    assert wilson_interval(0, 0) == (0.0, 0.0)
+
+
+def test_rejection_curve_intervals_align_with_groups():
+    """Plot data must use the right denominator and never invent missing groups."""
+    df = pd.DataFrame({
+        "K": [10] * 20 + [100] * 20,
+        "rejected": [True] * 18 + [False] * 2 + [False] * 20,
+    })
+    rates, lowers, uppers = rejection_curve_with_wilson(df, [10, 50, 100])
+
+    assert rates[0] == pytest.approx(0.90)
+    assert lowers[0] == pytest.approx(wilson_interval(18, 20)[0])
+    assert uppers[0] == pytest.approx(wilson_interval(18, 20)[1])
+    assert np.isnan(rates[1]) and np.isnan(lowers[1]) and np.isnan(uppers[1])
+    assert rates[2] == 0.0
+    assert lowers[2] == 0.0
+    assert uppers[2] > 0.0
