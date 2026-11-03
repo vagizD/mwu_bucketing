@@ -139,35 +139,35 @@ def make_pres_figure_2(df_a: pd.DataFrame, out_path: Path):
 
 
 def make_pres_figure_4(out_path: Path):
-    """Figure 4 for Slide 5: P-value vs # of Buckets."""
-    df_single = pd.read_csv("results/tables/table4_single_run.csv")
-    df_single["K"] = df_single["Aggregation Level"].apply(lambda s: int(s.split()[0]))
+    """Figure 4 for Slide 7: Significance (False Positive Rate) vs # of Buckets (A/A Null, Uplift = 0%)."""
+    df_null = pd.read_csv("results/tables/table3_null_rejections.csv")
 
     fig, ax = plt.subplots(figsize=(9, 4.4), dpi=180)
 
-    mwu_data = df_single[df_single["Test"] == "Mann-Whitney U"].sort_values("K")
-    welch_data = df_single[df_single["Test"] == "Welch t-test"].sort_values("K")
+    mwu_null = df_null[df_null["Test"] == "Mann-Whitney U"].sort_values("K")
+    k_vals = mwu_null["K"].values
+    fpr_vals = mwu_null["False Positive Rate"].values
+    ci_low = mwu_null["95% CI Lower"].values
+    ci_high = mwu_null["95% CI Upper"].values
 
-    x_labels = [f"{k}" if k < 100000 else "User-Level" for k in mwu_data["K"]]
-    x_pos = np.arange(len(mwu_data))
+    x_pos = np.arange(len(k_vals))
+    x_lbls = [f"{k}" if k < 100000 else "User-Level" for k in k_vals]
 
-    ax.plot(x_pos, mwu_data["p-value"], "o-", color="#d97706", linewidth=2.2, markersize=7, label="Mann-Whitney U")
-    ax.plot(x_pos[:-1], welch_data["p-value"], "s--", color="#2563eb", linewidth=1.8, markersize=6, label="Welch t-test")
-
+    yerr = [fpr_vals - ci_low, ci_high - fpr_vals]
+    ax.bar(x_pos, fpr_vals, color="#3b82f6", edgecolor="#1d4ed8", alpha=0.85, width=0.52, yerr=yerr, capsize=4, label="Mann-Whitney U False Positive Rate")
     ax.axhline(0.05, color="#dc2626", linestyle="--", linewidth=1.6, label="Significance alpha = 0.05")
 
-    for x, p in zip(x_pos, mwu_data["p-value"]):
-        offset = 0.04 if p < 0.2 else -0.06
-        ax.text(x, p + offset, f"{p:.3f}", ha="center", fontsize=8.5, fontweight="bold", color="#92400e")
+    for x, val, high in zip(x_pos, fpr_vals, ci_high):
+        ax.text(x, high + 0.007, f"{val:.2f}", ha="center", fontsize=8.8, fontweight="bold", color="#1e3a8a")
 
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(x_labels, fontsize=9.5)
+    ax.set_xticklabels(x_lbls, fontsize=9.5)
     ax.set_xlabel("Number of Buckets", fontsize=11, fontweight="bold")
-    ax.set_ylabel("P-value", fontsize=11, fontweight="bold")
-    ax.set_title("P-value vs # of Buckets", fontsize=13, fontweight="bold")
-    ax.set_ylim(-0.02, 1.05)
-    ax.grid(True, linestyle=":", alpha=0.5)
-    ax.legend(loc="upper left", fontsize=9.5)
+    ax.set_ylabel("False Positive Rate", fontsize=11, fontweight="bold")
+    ax.set_title("Significance vs # of Buckets (A/A Null, N=50 reps)", fontsize=13, fontweight="bold")
+    ax.set_ylim(0, 0.22)
+    ax.grid(True, linestyle=":", alpha=0.5, axis="y")
+    ax.legend(loc="upper right", fontsize=9.2)
 
     plt.tight_layout()
     plt.savefig(out_path, bbox_inches="tight")
@@ -175,13 +175,39 @@ def make_pres_figure_4(out_path: Path):
 
 
 def make_pres_figure_5(out_path: Path):
-    """Figure 5 for Slide 6: Power vs Uplift (with CI and vertical 2.3% line) & Significance vs K."""
+    """Figure 5 for Slide 8: Both A/B Plots - Panel A: P-value vs K (B has +2.3% Lift), Panel B: Power vs Uplift."""
+    df_single = pd.read_csv("results/tables/table4_single_run.csv")
+    df_single["K"] = df_single["Aggregation Level"].apply(lambda s: int(s.split()[0]))
     df_power = pd.read_csv("results/tables/table5_power_summary.csv")
-    df_null = pd.read_csv("results/tables/table3_null_rejections.csv")
 
-    fig, (ax_power, ax_signif) = plt.subplots(1, 2, figsize=(14.5, 4.8), dpi=180)
+    fig, (ax_pval, ax_power) = plt.subplots(1, 2, figsize=(14.5, 4.8), dpi=180)
 
-    # Panel A: Power vs Uplift
+    # Panel A: P-value vs # of Buckets (B has +2.3% Lift)
+    mwu_data = df_single[df_single["Test"] == "Mann-Whitney U"].sort_values("K")
+    welch_data = df_single[df_single["Test"] == "Welch t-test"].sort_values("K")
+
+    x_labels = [f"{k}" if k < 100000 else "User-Level" for k in mwu_data["K"]]
+    x_pos = np.arange(len(mwu_data))
+
+    ax_pval.plot(x_pos, mwu_data["p-value"], "o-", color="#d97706", linewidth=2.2, markersize=6.5, label="Mann-Whitney U")
+    ax_pval.plot(x_pos[:-1], welch_data["p-value"], "s--", color="#2563eb", linewidth=1.8, markersize=5.5, label="Welch t-test")
+
+    ax_pval.axhline(0.05, color="#dc2626", linestyle="--", linewidth=1.6, label="alpha = 0.05")
+
+    for x, p in zip(x_pos, mwu_data["p-value"]):
+        offset = 0.045 if p < 0.2 else -0.065
+        ax_pval.text(x, p + offset, f"{p:.3f}", ha="center", fontsize=8.5, fontweight="bold", color="#92400e")
+
+    ax_pval.set_xticks(x_pos)
+    ax_pval.set_xticklabels(x_labels, fontsize=9.0)
+    ax_pval.set_xlabel("Number of Buckets", fontsize=11, fontweight="bold")
+    ax_pval.set_ylabel("P-value", fontsize=11, fontweight="bold")
+    ax_pval.set_title("P-value vs # of Buckets (B has +2.3% Lift)", fontsize=12, fontweight="bold")
+    ax_pval.set_ylim(-0.02, 1.05)
+    ax_pval.grid(True, linestyle=":", alpha=0.5)
+    ax_pval.legend(loc="upper left", fontsize=8.8)
+
+    # Panel B: Power vs Uplift
     highlight_k = [10, 50, 100, 1000, 10000, 100000]
     colors = ["#2563eb", "#059669", "#16a34a", "#854d0e", "#64748b", "#dc2626"]
     deltas = sorted(df_power["Target Uplift (delta)"].unique())
@@ -207,38 +233,12 @@ def make_pres_figure_5(out_path: Path):
     ax_power.tick_params(axis='x', rotation=30)
     ax_power.set_xlabel("Uplift", fontsize=11, fontweight="bold")
     ax_power.set_ylabel("Power", fontsize=11, fontweight="bold")
-    ax_power.set_title("Power vs. Uplift", fontsize=12, fontweight="bold")
+    ax_power.set_title("Statistical Power vs. Uplift", fontsize=12, fontweight="bold")
     ax_power.set_ylim(-0.02, 1.05)
     ax_power.grid(True, linestyle=":", alpha=0.5)
     ax_power.legend(loc="lower right", fontsize=8.2)
 
-    # Panel B: Significance (FPR) vs K
-    mwu_null = df_null[df_null["Test"] == "Mann-Whitney U"].sort_values("K")
-    k_vals = mwu_null["K"].values
-    fpr_vals = mwu_null["False Positive Rate"].values
-    ci_low = mwu_null["95% CI Lower"].values
-    ci_high = mwu_null["95% CI Upper"].values
-
-    x_pos = np.arange(len(k_vals))
-    x_lbls = [f"{k}" if k < 100000 else "User-Level" for k in k_vals]
-
-    yerr = [fpr_vals - ci_low, ci_high - fpr_vals]
-    ax_signif.bar(x_pos, fpr_vals, color="#3b82f6", edgecolor="#1d4ed8", alpha=0.85, width=0.55, yerr=yerr, capsize=3.5, label="MWU False Positive Rate")
-    ax_signif.axhline(0.05, color="#dc2626", linestyle="--", linewidth=1.6, label="Significance alpha = 0.05")
-
-    for x, val, high in zip(x_pos, fpr_vals, ci_high):
-        ax_signif.text(x, high + 0.006, f"{val:.2f}", ha="center", fontsize=8.5, fontweight="bold", color="#1e3a8a")
-
-    ax_signif.set_xticks(x_pos)
-    ax_signif.set_xticklabels(x_lbls, fontsize=9.0)
-    ax_signif.set_xlabel("Number of Buckets", fontsize=11, fontweight="bold")
-    ax_signif.set_ylabel("False Positive Rate", fontsize=11, fontweight="bold")
-    ax_signif.set_title("Significance vs. # of Buckets (N=50 reps)", fontsize=12, fontweight="bold")
-    ax_signif.set_ylim(0, 0.22)
-    ax_signif.grid(True, linestyle=":", alpha=0.5, axis="y")
-    ax_signif.legend(loc="upper right", fontsize=8.8)
-
-    plt.suptitle("Power and Significance by Bucket Count", fontsize=13, fontweight="bold", y=1.04)
+    plt.suptitle("Statistical Power & Detection by Bucket Count (A/B Test)", fontsize=13, fontweight="bold", y=1.04)
     plt.tight_layout()
     plt.savefig(out_path, bbox_inches="tight")
     plt.close()
