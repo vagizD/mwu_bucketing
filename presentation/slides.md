@@ -75,14 +75,23 @@
 
 ---
 
-### Slide 9: Thank You
+### Slide 9: Modeling Caveats
+- **Title**: Modeling Caveats
+- **Key Points**:
+  - Monte-Carlo Resolution (number of uplift runs).
+  - Uplift Mechanism: Requires empirical knowledge.
+  - Population Structure: Heavy Skewness, Non-normality.
+
+---
+
+### Slide 10: Thank You
 - **Title**: Thank you
 - **Subtitle**: Remember us once you get in large-scale
 - Vagiz Daudov · Konur Nordberg · Duke University
 
 ---
 
-### Slide 10: Appendix: Treatment Injection Modeling
+### Slide 11: Appendix: Treatment Injection Modeling
 - **Title**: Appendix: Treatment Injection Modeling
 - **Formulas**:
   - Activity Weighting:
@@ -107,7 +116,7 @@
 
 ---
 
-### Slide 11: Appendix: Aggregation Diagnostics
+### Slide 12: Appendix: Aggregation Diagnostics
 | Aggregation Level | $K$ | Normality Status | MWU FPR ($\alpha=0.05$) [95% CI] | Single-run $p$ ($\delta=+2.3\%$) | Estimated MDE ($\text{Power}=80\%$) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 10 Buckets | 10 | **Holds** | 0.040 [0.011, 0.135] | 0.0640 (Rejected) | +2.70% |

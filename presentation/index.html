@@ -468,7 +468,7 @@
       </div>
       <div class="deck-footer">
         <span>Statistical Data Analysis</span>
-        <span>Slide 1 / 11</span>
+        <span>Slide 1 / 12</span>
       </div>
     </div>
 
@@ -484,7 +484,7 @@
       </div>
       <div class="deck-footer">
         <span>Customer Revenue Distribution</span>
-        <span>Slide 2 / 11</span>
+        <span>Slide 2 / 12</span>
       </div>
     </div>
 
@@ -500,7 +500,7 @@
       </div>
       <div class="deck-footer">
         <span>Control vs. Treatment Lift</span>
-        <span>Slide 3 / 11</span>
+        <span>Slide 3 / 12</span>
       </div>
     </div>
 
@@ -516,7 +516,7 @@
       </div>
       <div class="deck-footer">
         <span>Bucketization and Central Limit Theorem</span>
-        <span>Slide 4 / 11</span>
+        <span>Slide 4 / 12</span>
       </div>
     </div>
 
@@ -548,7 +548,7 @@
       </div>
       <div class="deck-footer">
         <span>Engineering Requirements</span>
-        <span>Slide 5 / 11</span>
+        <span>Slide 5 / 12</span>
       </div>
     </div>
 
@@ -564,7 +564,7 @@
       </div>
       <div class="deck-footer">
         <span>Empirical P-values across Bucket Counts</span>
-        <span>Slide 6 / 11</span>
+        <span>Slide 6 / 12</span>
       </div>
     </div>
 
@@ -580,7 +580,7 @@
       </div>
       <div class="deck-footer">
         <span>Power and Significance</span>
-        <span>Slide 7 / 11</span>
+        <span>Slide 7 / 12</span>
       </div>
     </div>
 
@@ -619,24 +619,53 @@
       </div>
       <div class="deck-footer">
         <span>Optimal Bucket Count and Pipeline</span>
-        <span>Slide 8 / 11</span>
+        <span>Slide 8 / 12</span>
       </div>
     </div>
 
-    <!-- Slide 8: Thank You -->
+    <!-- Slide 9: Modeling Caveats -->
     <div class="slide" data-index="9">
+      <div class="slide-header">
+        <div class="slide-title">Modeling Caveats</div>
+      </div>
+      <div class="slide-content" style="justify-content: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 36px 44px; display: flex; flex-direction: column; gap: 20px; max-width: 900px; margin: auto; width: 100%;">
+          <ul class="bullet-list" style="gap: 22px;">
+            <li class="bullet-item fragment">
+              <span class="bullet-marker"></span>
+              <span style="font-size: 19px;">Monte-Carlo Resolution (number of uplift runs).</span>
+            </li>
+            <li class="bullet-item fragment">
+              <span class="bullet-marker"></span>
+              <span style="font-size: 19px;">Uplift Mechanism: Requires empirical knowledge.</span>
+            </li>
+            <li class="bullet-item fragment">
+              <span class="bullet-marker"></span>
+              <span style="font-size: 19px;">Population Structure: Heavy Skewness, Non-normality.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Modeling Caveats</span>
+        <span>Slide 9 / 12</span>
+      </div>
+    </div>
+
+    <!-- Slide 10: Thank You -->
+    <div class="slide" data-index="10">
       <div class="cover-content">
         <div class="cover-title" style="font-size: 52px;">Thank you</div>
         <div class="cover-authors" style="font-size: 22px; color: var(--blue);">Remember us once you get in large-scale</div>
       </div>
       <div class="deck-footer">
         <span>Retail A/B Testing with Bucketization</span>
-        <span>Slide 9 / 11</span>
+        <span>Slide 10 / 12</span>
       </div>
     </div>
 
-    <!-- Slide 9: Appendix: Math -->
-    <div class="slide" data-index="10">
+    <!-- Slide 11: Appendix: Math -->
+    <div class="slide" data-index="11">
       <div class="slide-header">
         <div class="slide-title">Appendix: Treatment Injection Modeling</div>
       </div>
@@ -682,12 +711,12 @@
       </div>
       <div class="deck-footer">
         <span>Appendix: Mathematical Model</span>
-        <span>Slide 10 / 11</span>
+        <span>Slide 11 / 12</span>
       </div>
     </div>
 
-    <!-- Slide 10: Appendix: Diagnostic Table -->
-    <div class="slide" data-index="11">
+    <!-- Slide 12: Appendix: Diagnostic Table -->
+    <div class="slide" data-index="12">
       <div class="slide-header">
         <div class="slide-title">Appendix: Aggregation Diagnostics</div>
       </div>
@@ -775,7 +804,7 @@
       </div>
       <div class="deck-footer">
         <span>Appendix: Diagnostic Table</span>
-        <span>Slide 11 / 11</span>
+        <span>Slide 12 / 12</span>
       </div>
     </div>
 
@@ -785,7 +814,7 @@
   <div id="controls">
     <button class="btn-ctrl" onclick="prevStep()">← Prev (Left Arrow)</button>
     <button class="btn-ctrl" onclick="nextStep()">Next (Right Arrow / Space) →</button>
-    <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 11</span>
+    <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 12</span>
     <button class="btn-ctrl" onclick="toggleFullScreen()">Toggle Fullscreen (F)</button>
     <button class="btn-ctrl" onclick="window.print()">Print / PDF (Ctrl+P)</button>
     
@@ -798,7 +827,7 @@
 
   <script>
     let currentSlide = 1;
-    const totalSlides = 11;
+    const totalSlides = 12;
 
     // 8-Minute Countdown Timer (480 seconds)
     const INITIAL_TIME_SECONDS = 8 * 60;
