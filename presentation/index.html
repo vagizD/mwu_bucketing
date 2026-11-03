@@ -468,12 +468,61 @@
       </div>
       <div class="deck-footer">
         <span>Statistical Data Analysis</span>
-        <span>Slide 1 / 12</span>
+        <span>Slide 1 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 2: Real Customer Revenue Distribution -->
+    <!-- Slide 2: Problem Setup & Hypotheses -->
     <div class="slide" data-index="2">
+      <div class="slide-header">
+        <div class="slide-title">Problem Setup &amp; Hypotheses</div>
+      </div>
+      <div class="slide-content" style="justify-content: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 28px 36px; display: flex; flex-direction: column; gap: 16px; max-width: 920px; margin: auto; width: 100%;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--blue);">
+            How to make sure algorithm X is better than current baseline Y?
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 12px 18px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Control Group (A)</div>
+              <div style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-top: 2px;">Current Baseline Y</div>
+            </div>
+            <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 12px 18px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--blue); text-transform: uppercase;">Treatment Group (B)</div>
+              <div style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-top: 2px;">Candidate Algorithm X</div>
+            </div>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; font-family: 'Times New Roman', serif;">
+            <div>
+              <div style="font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Null Hypothesis: No difference</div>
+              <div style="text-align: center; font-size: 18px; margin-top: 2px;">
+                $$H_0: F_A(y) = F_B(y) \quad (\mu_A = \mu_B)$$
+              </div>
+            </div>
+            <div style="border-top: 1px solid var(--border-light); padding-top: 10px;">
+              <div style="font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 700; color: var(--blue); text-transform: uppercase;">Alternative Hypothesis: Algorithm X drives revenue uplift</div>
+              <div style="text-align: center; font-size: 18px; margin-top: 2px;">
+                $$H_1: F_A(y) \neq F_B(y) \quad (\mu_B &gt; \mu_A)$$
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size: 13.5px; color: var(--text-muted); display: flex; justify-content: space-between; padding: 0 4px;">
+            <span>Significance threshold: &alpha; = 0.05</span>
+            <span>Target power: 1 - &beta; &ge; 0.80</span>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Research Question &amp; Hypotheses</span>
+        <span>Slide 2 / 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 3: Real Customer Revenue Distribution -->
+    <div class="slide" data-index="3">
       <div class="slide-header">
         <div class="slide-title">Customer Revenue Distribution</div>
       </div>
@@ -484,12 +533,12 @@
       </div>
       <div class="deck-footer">
         <span>Customer Revenue Distribution</span>
-        <span>Slide 2 / 12</span>
+        <span>Slide 3 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 2b: Experiment +3% Lift on Spenders -->
-    <div class="slide" data-index="3">
+    <!-- Slide 4: Experiment +3% Lift on Spenders -->
+    <div class="slide" data-index="4">
       <div class="slide-header">
         <div class="slide-title">Customer Revenue: Control vs. Treatment (+3% Lift)</div>
       </div>
@@ -500,12 +549,12 @@
       </div>
       <div class="deck-footer">
         <span>Control vs. Treatment Lift</span>
-        <span>Slide 3 / 12</span>
+        <span>Slide 4 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 3: Bucketization: Central Limit Theorem -->
-    <div class="slide" data-index="4">
+    <!-- Slide 5: Bucketization: Central Limit Theorem -->
+    <div class="slide" data-index="5">
       <div class="slide-header">
         <div class="slide-title">Bucketization: Central Limit Theorem</div>
       </div>
@@ -516,12 +565,12 @@
       </div>
       <div class="deck-footer">
         <span>Bucketization and Central Limit Theorem</span>
-        <span>Slide 4 / 12</span>
+        <span>Slide 5 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 4: How to Choose Number of Buckets? -->
-    <div class="slide" data-index="5">
+    <!-- Slide 6: How to Choose Number of Buckets? -->
+    <div class="slide" data-index="6">
       <div class="slide-header">
         <div class="slide-title">How to choose number of buckets?</div>
       </div>
@@ -548,12 +597,12 @@
       </div>
       <div class="deck-footer">
         <span>Engineering Requirements</span>
-        <span>Slide 5 / 12</span>
+        <span>Slide 6 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 5: P-value vs # of Buckets -->
-    <div class="slide" data-index="6">
+    <!-- Slide 7: P-value vs # of Buckets -->
+    <div class="slide" data-index="7">
       <div class="slide-header">
         <div class="slide-title">P-value vs # of Buckets</div>
       </div>
@@ -564,12 +613,12 @@
       </div>
       <div class="deck-footer">
         <span>Empirical P-values across Bucket Counts</span>
-        <span>Slide 6 / 12</span>
+        <span>Slide 7 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 6: Power and Significance by Bucket Count -->
-    <div class="slide" data-index="7">
+    <!-- Slide 8: Power and Significance by Bucket Count -->
+    <div class="slide" data-index="8">
       <div class="slide-header">
         <div class="slide-title">Power and Significance by Bucket Count</div>
       </div>
@@ -580,12 +629,12 @@
       </div>
       <div class="deck-footer">
         <span>Power and Significance</span>
-        <span>Slide 7 / 12</span>
+        <span>Slide 8 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 7: Optimal Bucket Count -->
-    <div class="slide" data-index="8">
+    <!-- Slide 9: Optimal Bucket Count -->
+    <div class="slide" data-index="9">
       <div class="slide-header">
         <div class="slide-title">Optimal Bucket Count</div>
       </div>
@@ -619,12 +668,12 @@
       </div>
       <div class="deck-footer">
         <span>Optimal Bucket Count and Pipeline</span>
-        <span>Slide 8 / 12</span>
+        <span>Slide 9 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 9: Modeling Caveats -->
-    <div class="slide" data-index="9">
+    <!-- Slide 10: Modeling Caveats -->
+    <div class="slide" data-index="10">
       <div class="slide-header">
         <div class="slide-title">Modeling Caveats</div>
       </div>
@@ -648,24 +697,24 @@
       </div>
       <div class="deck-footer">
         <span>Modeling Caveats</span>
-        <span>Slide 9 / 12</span>
+        <span>Slide 10 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 10: Thank You -->
-    <div class="slide" data-index="10">
+    <!-- Slide 11: Thank You -->
+    <div class="slide" data-index="11">
       <div class="cover-content">
         <div class="cover-title" style="font-size: 52px;">Thank you</div>
         <div class="cover-authors" style="font-size: 22px; color: var(--blue);">Remember us once you get in large-scale</div>
       </div>
       <div class="deck-footer">
         <span>Retail A/B Testing with Bucketization</span>
-        <span>Slide 10 / 12</span>
+        <span>Slide 11 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 11: Appendix: Math -->
-    <div class="slide" data-index="11">
+    <!-- Slide 12: Appendix: Math -->
+    <div class="slide" data-index="12">
       <div class="slide-header">
         <div class="slide-title">Appendix: Treatment Injection Modeling</div>
       </div>
@@ -711,12 +760,12 @@
       </div>
       <div class="deck-footer">
         <span>Appendix: Mathematical Model</span>
-        <span>Slide 11 / 12</span>
+        <span>Slide 12 / 13</span>
       </div>
     </div>
 
-    <!-- Slide 12: Appendix: Diagnostic Table -->
-    <div class="slide" data-index="12">
+    <!-- Slide 13: Appendix: Diagnostic Table -->
+    <div class="slide" data-index="13">
       <div class="slide-header">
         <div class="slide-title">Appendix: Aggregation Diagnostics</div>
       </div>
@@ -804,7 +853,7 @@
       </div>
       <div class="deck-footer">
         <span>Appendix: Diagnostic Table</span>
-        <span>Slide 12 / 12</span>
+        <span>Slide 13 / 13</span>
       </div>
     </div>
 
@@ -814,7 +863,7 @@
   <div id="controls">
     <button class="btn-ctrl" onclick="prevStep()">← Prev (Left Arrow)</button>
     <button class="btn-ctrl" onclick="nextStep()">Next (Right Arrow / Space) →</button>
-    <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 12</span>
+    <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 13</span>
     <button class="btn-ctrl" onclick="toggleFullScreen()">Toggle Fullscreen (F)</button>
     <button class="btn-ctrl" onclick="window.print()">Print / PDF (Ctrl+P)</button>
     
@@ -827,7 +876,7 @@
 
   <script>
     let currentSlide = 1;
-    const totalSlides = 12;
+    const totalSlides = 13;
 
     // 8-Minute Countdown Timer (480 seconds)
     const INITIAL_TIME_SECONDS = 8 * 60;

@@ -13,14 +13,29 @@
 
 ---
 
-### Slide 2: Customer Revenue Distribution
+### Slide 2: Problem Setup & Hypotheses
+- **Title**: Problem Setup & Hypotheses
+- **Research Question**: *"How to make sure algorithm X is better than current baseline Y?"*
+- **Experimental Cohorts**:
+  - Control ($A$): Current Baseline $Y$
+  - Treatment ($B$): Candidate Algorithm $X$
+- **Formal Hypotheses**:
+  - Null Hypothesis ($H_0$): No revenue difference
+    $$H_0: F_A(y) = F_B(y) \quad (\mu_A = \mu_B)$$
+  - Alternative Hypothesis ($H_1$): Algorithm $X$ drives revenue uplift
+    $$H_1: F_A(y) \neq F_B(y) \quad (\mu_B > \mu_A)$$
+- **Design Thresholds**: $\alpha = 0.05$, target power $1 - \beta \ge 0.80$.
+
+---
+
+### Slide 3: Customer Revenue Distribution
 - **Title**: Customer Revenue Distribution
 - **Figure**: [pres_figure1a_user_revenue.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure1a_user_revenue.png)
 - Single plot showing real customer revenue distribution (65.0% zeros, long tail).
 
 ---
 
-### Slide 3: Customer Revenue: Control vs. Treatment (+3% Lift)
+### Slide 4: Customer Revenue: Control vs. Treatment (+3% Lift)
 - **Title**: Customer Revenue: Control vs. Treatment (+3% Lift)
 - **Figure**: [pres_figure1b_mwu_failure.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure1b_mwu_failure.png)
 - Single plot showing +3% active lift comparison:
@@ -29,7 +44,7 @@
 
 ---
 
-### Slide 4: Bucketization: Central Limit Theorem
+### Slide 5: Bucketization: Central Limit Theorem
 - **Title**: Bucketization: Central Limit Theorem
 - **Figure**: [pres_figure2_bucketization.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure2_bucketization.png)
 - Single plot showing distribution transition across buckets:
@@ -40,7 +55,7 @@
 
 ---
 
-### Slide 5: How to choose number of buckets?
+### Slide 6: How to choose number of buckets?
 - **Title**: How to choose number of buckets?
 - **We need to fix K before A/B, considering:**
   1. Statistical power: $1 - \beta \ge 0.80$
@@ -49,14 +64,14 @@
 
 ---
 
-### Slide 6: P-value vs # of Buckets
+### Slide 7: P-value vs # of Buckets
 - **Title**: P-value vs # of Buckets
 - **Figure**: [pres_figure4_pvalues.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure4_pvalues.png)
 - Single plot showing P-value curve across $K$ under true treatment $\delta = +2.3\%$.
 
 ---
 
-### Slide 7: Power and Significance by Bucket Count
+### Slide 8: Power and Significance by Bucket Count
 - **Title**: Power and Significance by Bucket Count
 - **Figure**: [pres_figure5_power_significance.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure5_power_significance.png)
 - Panel A: Power vs. Uplift (vertical line at $\delta = 2.3\%$, 95% Wilson CIs).
@@ -64,7 +79,7 @@
 
 ---
 
-### Slide 8: Optimal Bucket Count
+### Slide 9: Optimal Bucket Count
 - **Title**: Optimal Bucket Count
 - **Process Sequence**:
   $$\text{A/B Experiment} \longrightarrow \text{Non-normal Data} \longrightarrow \text{Bucketization } (K^* \approx 100\text{--}1000) \longrightarrow \text{Mann-Whitney U}$$
@@ -75,7 +90,7 @@
 
 ---
 
-### Slide 9: Modeling Caveats
+### Slide 10: Modeling Caveats
 - **Title**: Modeling Caveats
 - **Key Points**:
   - Monte-Carlo Resolution (number of uplift runs).
@@ -84,14 +99,14 @@
 
 ---
 
-### Slide 10: Thank You
+### Slide 11: Thank You
 - **Title**: Thank you
 - **Subtitle**: Remember us once you get in large-scale
 - Vagiz Daudov · Konur Nordberg · Duke University
 
 ---
 
-### Slide 11: Appendix: Treatment Injection Modeling
+### Slide 12: Appendix: Treatment Injection Modeling
 - **Title**: Appendix: Treatment Injection Modeling
 - **Formulas**:
   - Activity Weighting:
@@ -116,7 +131,7 @@
 
 ---
 
-### Slide 12: Appendix: Aggregation Diagnostics
+### Slide 13: Appendix: Diagnostic Table
 | Aggregation Level | $K$ | Normality Status | MWU FPR ($\alpha=0.05$) [95% CI] | Single-run $p$ ($\delta=+2.3\%$) | Estimated MDE ($\text{Power}=80\%$) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 10 Buckets | 10 | **Holds** | 0.040 [0.011, 0.135] | 0.0640 (Rejected) | +2.70% |
