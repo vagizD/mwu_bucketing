@@ -63,23 +63,25 @@
 ### Step 3: Baseline / Null Calibration (A/A Testing, $H_0$)
 
 #### Table 3. Null False-Positive Rates across Fresh A/B Splits (Nominal $\alpha = 0.05$)
-| Aggregation Level | K | Test | Repetitions | False Positive Rate | Mean p-value | Median p-value |
-| --- | --- | --- | --- | --- | --- | --- |
-| 10 Buckets | 10 | Mann-Whitney U | 50 | 0.0400 | 0.6146 | 0.6776 |
-| 10 Buckets | 10 | Welch t-test | 50 | 0.0400 | 0.5780 | 0.6153 |
-| 50 Buckets | 50 | Mann-Whitney U | 50 | 0.0600 | 0.5395 | 0.5465 |
-| 50 Buckets | 50 | Welch t-test | 50 | 0.0600 | 0.5751 | 0.5954 |
-| 100 Buckets | 100 | Mann-Whitney U | 50 | 0.0200 | 0.5592 | 0.5816 |
-| 100 Buckets | 100 | Welch t-test | 50 | 0.0200 | 0.5753 | 0.6187 |
-| 500 Buckets | 500 | Mann-Whitney U | 50 | 0.0400 | 0.5652 | 0.5769 |
-| 500 Buckets | 500 | Welch t-test | 50 | 0.0200 | 0.5779 | 0.5986 |
-| 1000 Buckets | 1000 | Mann-Whitney U | 50 | 0.0200 | 0.5492 | 0.6020 |
-| 1000 Buckets | 1000 | Welch t-test | 50 | 0.0200 | 0.5772 | 0.5971 |
-| 5000 Buckets | 5000 | Mann-Whitney U | 50 | 0.0400 | 0.5616 | 0.6283 |
-| 5000 Buckets | 5000 | Welch t-test | 50 | 0.0200 | 0.5766 | 0.5957 |
-| 10000 Buckets | 10000 | Mann-Whitney U | 50 | 0.0200 | 0.5493 | 0.5418 |
-| 10000 Buckets | 10000 | Welch t-test | 50 | 0.0200 | 0.5765 | 0.5950 |
-| 100000 (User Level) | 100000 | Mann-Whitney U | 50 | 0.0400 | 0.5666 | 0.6244 |
+| Aggregation Level | K | Test | Repetitions | Rejections | False Positive Rate | 95% CI Lower | 95% CI Upper | Mean p-value | Median p-value |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 10 Buckets | 10 | Mann-Whitney U | 50 | 2 | 0.0400 | 0.0110 | 0.1346 | 0.6146 | 0.6776 |
+| 10 Buckets | 10 | Welch t-test | 50 | 2 | 0.0400 | 0.0110 | 0.1346 | 0.5780 | 0.6153 |
+| 50 Buckets | 50 | Mann-Whitney U | 50 | 3 | 0.0600 | 0.0206 | 0.1622 | 0.5395 | 0.5465 |
+| 50 Buckets | 50 | Welch t-test | 50 | 3 | 0.0600 | 0.0206 | 0.1622 | 0.5751 | 0.5954 |
+| 100 Buckets | 100 | Mann-Whitney U | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5592 | 0.5816 |
+| 100 Buckets | 100 | Welch t-test | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5753 | 0.6187 |
+| 500 Buckets | 500 | Mann-Whitney U | 50 | 2 | 0.0400 | 0.0110 | 0.1346 | 0.5652 | 0.5769 |
+| 500 Buckets | 500 | Welch t-test | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5779 | 0.5986 |
+| 1000 Buckets | 1000 | Mann-Whitney U | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5492 | 0.6020 |
+| 1000 Buckets | 1000 | Welch t-test | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5772 | 0.5971 |
+| 5000 Buckets | 5000 | Mann-Whitney U | 50 | 2 | 0.0400 | 0.0110 | 0.1346 | 0.5616 | 0.6283 |
+| 5000 Buckets | 5000 | Welch t-test | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5766 | 0.5957 |
+| 10000 Buckets | 10000 | Mann-Whitney U | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5493 | 0.5418 |
+| 10000 Buckets | 10000 | Welch t-test | 50 | 1 | 0.0200 | 0.0035 | 0.1050 | 0.5765 | 0.5950 |
+| 100000 (User Level) | 100000 | Mann-Whitney U | 50 | 2 | 0.0400 | 0.0110 | 0.1346 | 0.5666 | 0.6244 |
+
+*The 95% Wilson confidence intervals quantify uncertainty from the 50 null repetitions. They are not proof that the true false-positive rate equals 5%.*
 
 #### Figure 3. Null False-Positive Rates Ordered Monotonically by Bucket Count K
 ![Figure 3: Null Rejection Rates](results/plots/figure3_null_pvalues.png)
@@ -129,134 +131,137 @@
 ### Step 5: Power Analysis Across Bucket Counts and Realistic Uplifts
 
 #### Table 5. Empirical Power and Realized Uplift Summary
-| Target Uplift (delta) | K | Aggregation Level | Test | Repetitions | Empirical Power | Mean p-value | Median p-value | Mean Realized Uplift |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.0050 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8289 | 0.8501 | 0.0049 |
-| 0.0050 | 10 | 10 Buckets | Welch t-test | 20 | 0.0000 | 0.8391 | 0.8376 | 0.0049 |
-| 0.0050 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8719 | 0.9122 | 0.0049 |
-| 0.0050 | 50 | 50 Buckets | Welch t-test | 20 | 0.0000 | 0.8396 | 0.8480 | 0.0049 |
-| 0.0050 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8360 | 0.8796 | 0.0049 |
-| 0.0050 | 100 | 100 Buckets | Welch t-test | 20 | 0.0000 | 0.8377 | 0.8354 | 0.0049 |
-| 0.0050 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8348 | 0.8275 | 0.0049 |
-| 0.0050 | 500 | 500 Buckets | Welch t-test | 20 | 0.0000 | 0.8377 | 0.8340 | 0.0049 |
-| 0.0050 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8286 | 0.8612 | 0.0049 |
-| 0.0050 | 1000 | 1000 Buckets | Welch t-test | 20 | 0.0000 | 0.8384 | 0.8371 | 0.0049 |
-| 0.0050 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.7812 | 0.8166 | 0.0049 |
-| 0.0050 | 5000 | 5000 Buckets | Welch t-test | 20 | 0.0000 | 0.8379 | 0.8350 | 0.0049 |
-| 0.0050 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.8206 | 0.8645 | 0.0049 |
-| 0.0050 | 10000 | 10000 Buckets | Welch t-test | 20 | 0.0000 | 0.8379 | 0.8341 | 0.0049 |
-| 0.0050 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.5074 | 0.5086 | 0.0049 |
-| 0.0100 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.4740 | 0.4500 | 0.0100 |
-| 0.0100 | 10 | 10 Buckets | Welch t-test | 20 | 0.0000 | 0.4398 | 0.4476 | 0.0100 |
-| 0.0100 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.4902 | 0.4863 | 0.0100 |
-| 0.0100 | 50 | 50 Buckets | Welch t-test | 20 | 0.0000 | 0.4441 | 0.4413 | 0.0100 |
-| 0.0100 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.4161 | 0.3824 | 0.0100 |
-| 0.0100 | 100 | 100 Buckets | Welch t-test | 20 | 0.0000 | 0.4337 | 0.4429 | 0.0100 |
-| 0.0100 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.4765 | 0.4863 | 0.0100 |
-| 0.0100 | 500 | 500 Buckets | Welch t-test | 20 | 0.0000 | 0.4472 | 0.4504 | 0.0100 |
-| 0.0100 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.5012 | 0.4826 | 0.0100 |
-| 0.0100 | 1000 | 1000 Buckets | Welch t-test | 20 | 0.0000 | 0.4469 | 0.4469 | 0.0100 |
-| 0.0100 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.5520 | 0.5111 | 0.0100 |
-| 0.0100 | 5000 | 5000 Buckets | Welch t-test | 20 | 0.0000 | 0.4456 | 0.4433 | 0.0100 |
-| 0.0100 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.7100 | 0.6947 | 0.0100 |
-| 0.0100 | 10000 | 10000 Buckets | Welch t-test | 20 | 0.0000 | 0.4446 | 0.4427 | 0.0100 |
-| 0.0100 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.6229 | 0.6237 | 0.0100 |
-| 0.0150 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.3012 | 0.2730 | 0.0152 |
-| 0.0150 | 10 | 10 Buckets | Welch t-test | 20 | 0.0000 | 0.1913 | 0.1868 | 0.0152 |
-| 0.0150 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0.0500 | 0.2151 | 0.1893 | 0.0152 |
-| 0.0150 | 50 | 50 Buckets | Welch t-test | 20 | 0.0000 | 0.1793 | 0.1836 | 0.0152 |
-| 0.0150 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.0500 | 0.2001 | 0.1814 | 0.0152 |
-| 0.0150 | 100 | 100 Buckets | Welch t-test | 20 | 0.0000 | 0.1810 | 0.1748 | 0.0152 |
-| 0.0150 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.1931 | 0.1873 | 0.0152 |
-| 0.0150 | 500 | 500 Buckets | Welch t-test | 20 | 0.0000 | 0.1764 | 0.1750 | 0.0152 |
-| 0.0150 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.1719 | 0.1703 | 0.0152 |
-| 0.0150 | 1000 | 1000 Buckets | Welch t-test | 20 | 0.0000 | 0.1799 | 0.1791 | 0.0152 |
-| 0.0150 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.3069 | 0.3139 | 0.0152 |
-| 0.0150 | 5000 | 5000 Buckets | Welch t-test | 20 | 0.0000 | 0.1799 | 0.1807 | 0.0152 |
-| 0.0150 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.0000 | 0.3352 | 0.3127 | 0.0152 |
-| 0.0150 | 10000 | 10000 Buckets | Welch t-test | 20 | 0.0000 | 0.1811 | 0.1819 | 0.0152 |
-| 0.0150 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.7469 | 0.7511 | 0.0152 |
-| 0.0200 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.2500 | 0.1071 | 0.0890 | 0.0201 |
-| 0.0200 | 10 | 10 Buckets | Welch t-test | 20 | 0.3500 | 0.0719 | 0.0685 | 0.0201 |
-| 0.0200 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0.2000 | 0.0884 | 0.0837 | 0.0201 |
-| 0.0200 | 50 | 50 Buckets | Welch t-test | 20 | 0.2500 | 0.0626 | 0.0652 | 0.0201 |
-| 0.0200 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.1000 | 0.0762 | 0.0687 | 0.0201 |
-| 0.0200 | 100 | 100 Buckets | Welch t-test | 20 | 0.3000 | 0.0607 | 0.0571 | 0.0201 |
-| 0.0200 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0.2500 | 0.0682 | 0.0669 | 0.0201 |
-| 0.0200 | 500 | 500 Buckets | Welch t-test | 20 | 0.0500 | 0.0632 | 0.0639 | 0.0201 |
-| 0.0200 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0.4000 | 0.0637 | 0.0605 | 0.0201 |
-| 0.0200 | 1000 | 1000 Buckets | Welch t-test | 20 | 0.2000 | 0.0611 | 0.0625 | 0.0201 |
-| 0.0200 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.1000 | 0.1145 | 0.1089 | 0.0201 |
-| 0.0200 | 5000 | 5000 Buckets | Welch t-test | 20 | 0.1000 | 0.0601 | 0.0605 | 0.0201 |
-| 0.0200 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.0500 | 0.1333 | 0.1086 | 0.0201 |
-| 0.0200 | 10000 | 10000 Buckets | Welch t-test | 20 | 0.1500 | 0.0604 | 0.0604 | 0.0201 |
-| 0.0200 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.8838 | 0.8872 | 0.0201 |
-| 0.0230 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.7000 | 0.0539 | 0.0376 | 0.0228 |
-| 0.0230 | 10 | 10 Buckets | Welch t-test | 20 | 0.6500 | 0.0421 | 0.0324 | 0.0228 |
-| 0.0230 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0.6500 | 0.0440 | 0.0371 | 0.0228 |
-| 0.0230 | 50 | 50 Buckets | Welch t-test | 20 | 0.9000 | 0.0290 | 0.0271 | 0.0228 |
-| 0.0230 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.9000 | 0.0332 | 0.0312 | 0.0228 |
-| 0.0230 | 100 | 100 Buckets | Welch t-test | 20 | 1.0000 | 0.0311 | 0.0322 | 0.0228 |
-| 0.0230 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0.5000 | 0.0477 | 0.0473 | 0.0228 |
-| 0.0230 | 500 | 500 Buckets | Welch t-test | 20 | 1.0000 | 0.0317 | 0.0308 | 0.0228 |
-| 0.0230 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0.8500 | 0.0358 | 0.0318 | 0.0228 |
-| 0.0230 | 1000 | 1000 Buckets | Welch t-test | 20 | 1.0000 | 0.0302 | 0.0286 | 0.0228 |
-| 0.0230 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.6500 | 0.0520 | 0.0421 | 0.0228 |
-| 0.0230 | 5000 | 5000 Buckets | Welch t-test | 20 | 1.0000 | 0.0303 | 0.0281 | 0.0228 |
-| 0.0230 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.1500 | 0.0900 | 0.0807 | 0.0228 |
-| 0.0230 | 10000 | 10000 Buckets | Welch t-test | 20 | 1.0000 | 0.0301 | 0.0279 | 0.0228 |
-| 0.0230 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.9578 | 0.9576 | 0.0228 |
-| 0.0260 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.7500 | 0.0352 | 0.0211 | 0.0258 |
-| 0.0260 | 10 | 10 Buckets | Welch t-test | 20 | 0.9500 | 0.0222 | 0.0176 | 0.0258 |
-| 0.0260 | 50 | 50 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0165 | 0.0104 | 0.0258 |
-| 0.0260 | 50 | 50 Buckets | Welch t-test | 20 | 1.0000 | 0.0119 | 0.0087 | 0.0258 |
-| 0.0260 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0.9000 | 0.0233 | 0.0213 | 0.0258 |
-| 0.0260 | 100 | 100 Buckets | Welch t-test | 20 | 1.0000 | 0.0158 | 0.0140 | 0.0258 |
-| 0.0260 | 500 | 500 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0178 | 0.0162 | 0.0258 |
-| 0.0260 | 500 | 500 Buckets | Welch t-test | 20 | 1.0000 | 0.0122 | 0.0119 | 0.0258 |
-| 0.0260 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0230 | 0.0245 | 0.0258 |
-| 0.0260 | 1000 | 1000 Buckets | Welch t-test | 20 | 1.0000 | 0.0125 | 0.0128 | 0.0258 |
-| 0.0260 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0.9500 | 0.0319 | 0.0285 | 0.0258 |
-| 0.0260 | 5000 | 5000 Buckets | Welch t-test | 20 | 1.0000 | 0.0121 | 0.0116 | 0.0258 |
-| 0.0260 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0.7000 | 0.0414 | 0.0408 | 0.0258 |
-| 0.0260 | 10000 | 10000 Buckets | Welch t-test | 20 | 1.0000 | 0.0124 | 0.0123 | 0.0258 |
-| 0.0260 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.9640 | 0.9663 | 0.0258 |
-| 0.0300 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0.9500 | 0.0210 | 0.0156 | 0.0298 |
-| 0.0300 | 10 | 10 Buckets | Welch t-test | 20 | 1.0000 | 0.0133 | 0.0097 | 0.0298 |
-| 0.0300 | 50 | 50 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0083 | 0.0070 | 0.0298 |
-| 0.0300 | 50 | 50 Buckets | Welch t-test | 20 | 1.0000 | 0.0052 | 0.0051 | 0.0298 |
-| 0.0300 | 100 | 100 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0061 | 0.0050 | 0.0298 |
-| 0.0300 | 100 | 100 Buckets | Welch t-test | 20 | 1.0000 | 0.0046 | 0.0042 | 0.0298 |
-| 0.0300 | 500 | 500 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0061 | 0.0060 | 0.0298 |
-| 0.0300 | 500 | 500 Buckets | Welch t-test | 20 | 1.0000 | 0.0036 | 0.0035 | 0.0298 |
-| 0.0300 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0046 | 0.0037 | 0.0298 |
-| 0.0300 | 1000 | 1000 Buckets | Welch t-test | 20 | 1.0000 | 0.0034 | 0.0034 | 0.0298 |
-| 0.0300 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0082 | 0.0069 | 0.0298 |
-| 0.0300 | 5000 | 5000 Buckets | Welch t-test | 20 | 1.0000 | 0.0034 | 0.0032 | 0.0298 |
-| 0.0300 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0170 | 0.0158 | 0.0298 |
-| 0.0300 | 10000 | 10000 Buckets | Welch t-test | 20 | 1.0000 | 0.0034 | 0.0032 | 0.0298 |
-| 0.0300 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.8581 | 0.8562 | 0.0298 |
-| 0.0500 | 10 | 10 Buckets | Mann-Whitney U | 20 | 1.0000 | 0.0007 | 0.0004 | 0.0504 |
-| 0.0500 | 10 | 10 Buckets | Welch t-test | 20 | 1.0000 | 0.0001 | 3.15e-05 | 0.0504 |
-| 0.0500 | 50 | 50 Buckets | Mann-Whitney U | 20 | 1.0000 | 6.67e-06 | 1.75e-06 | 0.0504 |
-| 0.0500 | 50 | 50 Buckets | Welch t-test | 20 | 1.0000 | 4.09e-06 | 7.79e-07 | 0.0504 |
-| 0.0500 | 100 | 100 Buckets | Mann-Whitney U | 20 | 1.0000 | 2.95e-06 | 1.49e-06 | 0.0504 |
-| 0.0500 | 100 | 100 Buckets | Welch t-test | 20 | 1.0000 | 1.30e-06 | 6.02e-07 | 0.0504 |
-| 0.0500 | 500 | 500 Buckets | Mann-Whitney U | 20 | 1.0000 | 1.43e-06 | 8.60e-07 | 0.0504 |
-| 0.0500 | 500 | 500 Buckets | Welch t-test | 20 | 1.0000 | 4.50e-07 | 2.91e-07 | 0.0504 |
-| 0.0500 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 1.0000 | 1.66e-06 | 7.08e-07 | 0.0504 |
-| 0.0500 | 1000 | 1000 Buckets | Welch t-test | 20 | 1.0000 | 3.46e-07 | 2.68e-07 | 0.0504 |
-| 0.0500 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 1.0000 | 6.01e-06 | 1.65e-06 | 0.0504 |
-| 0.0500 | 5000 | 5000 Buckets | Welch t-test | 20 | 1.0000 | 3.07e-07 | 2.53e-07 | 0.0504 |
-| 0.0500 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 1.0000 | 2.80e-05 | 1.06e-05 | 0.0504 |
-| 0.0500 | 10000 | 10000 Buckets | Welch t-test | 20 | 1.0000 | 3.18e-07 | 2.62e-07 | 0.0504 |
-| 0.0500 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0.0000 | 0.3925 | 0.3878 | 0.0504 |
+| Target Uplift (delta) | K | Aggregation Level | Test | Repetitions | Rejections | Empirical Power | 95% CI Lower | 95% CI Upper | Mean p-value | Median p-value | Mean Realized Uplift |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.0050 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8289 | 0.8501 | 0.0049 |
+| 0.0050 | 10 | 10 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8391 | 0.8376 | 0.0049 |
+| 0.0050 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8719 | 0.9122 | 0.0049 |
+| 0.0050 | 50 | 50 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8396 | 0.8480 | 0.0049 |
+| 0.0050 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8360 | 0.8796 | 0.0049 |
+| 0.0050 | 100 | 100 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8377 | 0.8354 | 0.0049 |
+| 0.0050 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8348 | 0.8275 | 0.0049 |
+| 0.0050 | 500 | 500 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8377 | 0.8340 | 0.0049 |
+| 0.0050 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8286 | 0.8612 | 0.0049 |
+| 0.0050 | 1000 | 1000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8384 | 0.8371 | 0.0049 |
+| 0.0050 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.7812 | 0.8166 | 0.0049 |
+| 0.0050 | 5000 | 5000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8379 | 0.8350 | 0.0049 |
+| 0.0050 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8206 | 0.8645 | 0.0049 |
+| 0.0050 | 10000 | 10000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8379 | 0.8341 | 0.0049 |
+| 0.0050 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.5074 | 0.5086 | 0.0049 |
+| 0.0100 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4740 | 0.4500 | 0.0100 |
+| 0.0100 | 10 | 10 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4398 | 0.4476 | 0.0100 |
+| 0.0100 | 50 | 50 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4902 | 0.4863 | 0.0100 |
+| 0.0100 | 50 | 50 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4441 | 0.4413 | 0.0100 |
+| 0.0100 | 100 | 100 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4161 | 0.3824 | 0.0100 |
+| 0.0100 | 100 | 100 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4337 | 0.4429 | 0.0100 |
+| 0.0100 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4765 | 0.4863 | 0.0100 |
+| 0.0100 | 500 | 500 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4472 | 0.4504 | 0.0100 |
+| 0.0100 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.5012 | 0.4826 | 0.0100 |
+| 0.0100 | 1000 | 1000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4469 | 0.4469 | 0.0100 |
+| 0.0100 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.5520 | 0.5111 | 0.0100 |
+| 0.0100 | 5000 | 5000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4456 | 0.4433 | 0.0100 |
+| 0.0100 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.7100 | 0.6947 | 0.0100 |
+| 0.0100 | 10000 | 10000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.4446 | 0.4427 | 0.0100 |
+| 0.0100 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.6229 | 0.6237 | 0.0100 |
+| 0.0150 | 10 | 10 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.3012 | 0.2730 | 0.0152 |
+| 0.0150 | 10 | 10 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1913 | 0.1868 | 0.0152 |
+| 0.0150 | 50 | 50 Buckets | Mann-Whitney U | 20 | 1 | 0.0500 | 0.0089 | 0.2361 | 0.2151 | 0.1893 | 0.0152 |
+| 0.0150 | 50 | 50 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1793 | 0.1836 | 0.0152 |
+| 0.0150 | 100 | 100 Buckets | Mann-Whitney U | 20 | 1 | 0.0500 | 0.0089 | 0.2361 | 0.2001 | 0.1814 | 0.0152 |
+| 0.0150 | 100 | 100 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1810 | 0.1748 | 0.0152 |
+| 0.0150 | 500 | 500 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1931 | 0.1873 | 0.0152 |
+| 0.0150 | 500 | 500 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1764 | 0.1750 | 0.0152 |
+| 0.0150 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1719 | 0.1703 | 0.0152 |
+| 0.0150 | 1000 | 1000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1799 | 0.1791 | 0.0152 |
+| 0.0150 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.3069 | 0.3139 | 0.0152 |
+| 0.0150 | 5000 | 5000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1799 | 0.1807 | 0.0152 |
+| 0.0150 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.3352 | 0.3127 | 0.0152 |
+| 0.0150 | 10000 | 10000 Buckets | Welch t-test | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.1811 | 0.1819 | 0.0152 |
+| 0.0150 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.7469 | 0.7511 | 0.0152 |
+| 0.0200 | 10 | 10 Buckets | Mann-Whitney U | 20 | 5 | 0.2500 | 0.1119 | 0.4687 | 0.1071 | 0.0890 | 0.0201 |
+| 0.0200 | 10 | 10 Buckets | Welch t-test | 20 | 7 | 0.3500 | 0.1812 | 0.5671 | 0.0719 | 0.0685 | 0.0201 |
+| 0.0200 | 50 | 50 Buckets | Mann-Whitney U | 20 | 4 | 0.2000 | 0.0807 | 0.4160 | 0.0884 | 0.0837 | 0.0201 |
+| 0.0200 | 50 | 50 Buckets | Welch t-test | 20 | 5 | 0.2500 | 0.1119 | 0.4687 | 0.0626 | 0.0652 | 0.0201 |
+| 0.0200 | 100 | 100 Buckets | Mann-Whitney U | 20 | 2 | 0.1000 | 0.0279 | 0.3010 | 0.0762 | 0.0687 | 0.0201 |
+| 0.0200 | 100 | 100 Buckets | Welch t-test | 20 | 6 | 0.3000 | 0.1455 | 0.5190 | 0.0607 | 0.0571 | 0.0201 |
+| 0.0200 | 500 | 500 Buckets | Mann-Whitney U | 20 | 5 | 0.2500 | 0.1119 | 0.4687 | 0.0682 | 0.0669 | 0.0201 |
+| 0.0200 | 500 | 500 Buckets | Welch t-test | 20 | 1 | 0.0500 | 0.0089 | 0.2361 | 0.0632 | 0.0639 | 0.0201 |
+| 0.0200 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 8 | 0.4000 | 0.2188 | 0.6134 | 0.0637 | 0.0605 | 0.0201 |
+| 0.0200 | 1000 | 1000 Buckets | Welch t-test | 20 | 4 | 0.2000 | 0.0807 | 0.4160 | 0.0611 | 0.0625 | 0.0201 |
+| 0.0200 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 2 | 0.1000 | 0.0279 | 0.3010 | 0.1145 | 0.1089 | 0.0201 |
+| 0.0200 | 5000 | 5000 Buckets | Welch t-test | 20 | 2 | 0.1000 | 0.0279 | 0.3010 | 0.0601 | 0.0605 | 0.0201 |
+| 0.0200 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 1 | 0.0500 | 0.0089 | 0.2361 | 0.1333 | 0.1086 | 0.0201 |
+| 0.0200 | 10000 | 10000 Buckets | Welch t-test | 20 | 3 | 0.1500 | 0.0524 | 0.3604 | 0.0604 | 0.0604 | 0.0201 |
+| 0.0200 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8838 | 0.8872 | 0.0201 |
+| 0.0230 | 10 | 10 Buckets | Mann-Whitney U | 20 | 14 | 0.7000 | 0.4810 | 0.8545 | 0.0539 | 0.0376 | 0.0228 |
+| 0.0230 | 10 | 10 Buckets | Welch t-test | 20 | 13 | 0.6500 | 0.4329 | 0.8188 | 0.0421 | 0.0324 | 0.0228 |
+| 0.0230 | 50 | 50 Buckets | Mann-Whitney U | 20 | 13 | 0.6500 | 0.4329 | 0.8188 | 0.0440 | 0.0371 | 0.0228 |
+| 0.0230 | 50 | 50 Buckets | Welch t-test | 20 | 18 | 0.9000 | 0.6990 | 0.9721 | 0.0290 | 0.0271 | 0.0228 |
+| 0.0230 | 100 | 100 Buckets | Mann-Whitney U | 20 | 18 | 0.9000 | 0.6990 | 0.9721 | 0.0332 | 0.0312 | 0.0228 |
+| 0.0230 | 100 | 100 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0311 | 0.0322 | 0.0228 |
+| 0.0230 | 500 | 500 Buckets | Mann-Whitney U | 20 | 10 | 0.5000 | 0.2993 | 0.7007 | 0.0477 | 0.0473 | 0.0228 |
+| 0.0230 | 500 | 500 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0317 | 0.0308 | 0.0228 |
+| 0.0230 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 17 | 0.8500 | 0.6396 | 0.9476 | 0.0358 | 0.0318 | 0.0228 |
+| 0.0230 | 1000 | 1000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0302 | 0.0286 | 0.0228 |
+| 0.0230 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 13 | 0.6500 | 0.4329 | 0.8188 | 0.0520 | 0.0421 | 0.0228 |
+| 0.0230 | 5000 | 5000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0303 | 0.0281 | 0.0228 |
+| 0.0230 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 3 | 0.1500 | 0.0524 | 0.3604 | 0.0900 | 0.0807 | 0.0228 |
+| 0.0230 | 10000 | 10000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0301 | 0.0279 | 0.0228 |
+| 0.0230 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.9578 | 0.9576 | 0.0228 |
+| 0.0260 | 10 | 10 Buckets | Mann-Whitney U | 20 | 15 | 0.7500 | 0.5313 | 0.8881 | 0.0352 | 0.0211 | 0.0258 |
+| 0.0260 | 10 | 10 Buckets | Welch t-test | 20 | 19 | 0.9500 | 0.7639 | 0.9911 | 0.0222 | 0.0176 | 0.0258 |
+| 0.0260 | 50 | 50 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0165 | 0.0104 | 0.0258 |
+| 0.0260 | 50 | 50 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0119 | 0.0087 | 0.0258 |
+| 0.0260 | 100 | 100 Buckets | Mann-Whitney U | 20 | 18 | 0.9000 | 0.6990 | 0.9721 | 0.0233 | 0.0213 | 0.0258 |
+| 0.0260 | 100 | 100 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0158 | 0.0140 | 0.0258 |
+| 0.0260 | 500 | 500 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0178 | 0.0162 | 0.0258 |
+| 0.0260 | 500 | 500 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0122 | 0.0119 | 0.0258 |
+| 0.0260 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0230 | 0.0245 | 0.0258 |
+| 0.0260 | 1000 | 1000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0125 | 0.0128 | 0.0258 |
+| 0.0260 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 19 | 0.9500 | 0.7639 | 0.9911 | 0.0319 | 0.0285 | 0.0258 |
+| 0.0260 | 5000 | 5000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0121 | 0.0116 | 0.0258 |
+| 0.0260 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 14 | 0.7000 | 0.4810 | 0.8545 | 0.0414 | 0.0408 | 0.0258 |
+| 0.0260 | 10000 | 10000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0124 | 0.0123 | 0.0258 |
+| 0.0260 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.9640 | 0.9663 | 0.0258 |
+| 0.0300 | 10 | 10 Buckets | Mann-Whitney U | 20 | 19 | 0.9500 | 0.7639 | 0.9911 | 0.0210 | 0.0156 | 0.0298 |
+| 0.0300 | 10 | 10 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0133 | 0.0097 | 0.0298 |
+| 0.0300 | 50 | 50 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0083 | 0.0070 | 0.0298 |
+| 0.0300 | 50 | 50 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0052 | 0.0051 | 0.0298 |
+| 0.0300 | 100 | 100 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0061 | 0.0050 | 0.0298 |
+| 0.0300 | 100 | 100 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0046 | 0.0042 | 0.0298 |
+| 0.0300 | 500 | 500 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0061 | 0.0060 | 0.0298 |
+| 0.0300 | 500 | 500 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0036 | 0.0035 | 0.0298 |
+| 0.0300 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0046 | 0.0037 | 0.0298 |
+| 0.0300 | 1000 | 1000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0034 | 0.0034 | 0.0298 |
+| 0.0300 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0082 | 0.0069 | 0.0298 |
+| 0.0300 | 5000 | 5000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0034 | 0.0032 | 0.0298 |
+| 0.0300 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0170 | 0.0158 | 0.0298 |
+| 0.0300 | 10000 | 10000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0034 | 0.0032 | 0.0298 |
+| 0.0300 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.8581 | 0.8562 | 0.0298 |
+| 0.0500 | 10 | 10 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0007 | 0.0004 | 0.0504 |
+| 0.0500 | 10 | 10 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 0.0001 | 3.15e-05 | 0.0504 |
+| 0.0500 | 50 | 50 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 6.67e-06 | 1.75e-06 | 0.0504 |
+| 0.0500 | 50 | 50 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 4.09e-06 | 7.79e-07 | 0.0504 |
+| 0.0500 | 100 | 100 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 2.95e-06 | 1.49e-06 | 0.0504 |
+| 0.0500 | 100 | 100 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 1.30e-06 | 6.02e-07 | 0.0504 |
+| 0.0500 | 500 | 500 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 1.43e-06 | 8.60e-07 | 0.0504 |
+| 0.0500 | 500 | 500 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 4.50e-07 | 2.91e-07 | 0.0504 |
+| 0.0500 | 1000 | 1000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 1.66e-06 | 7.08e-07 | 0.0504 |
+| 0.0500 | 1000 | 1000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 3.46e-07 | 2.68e-07 | 0.0504 |
+| 0.0500 | 5000 | 5000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 6.01e-06 | 1.65e-06 | 0.0504 |
+| 0.0500 | 5000 | 5000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 3.07e-07 | 2.53e-07 | 0.0504 |
+| 0.0500 | 10000 | 10000 Buckets | Mann-Whitney U | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 2.80e-05 | 1.06e-05 | 0.0504 |
+| 0.0500 | 10000 | 10000 Buckets | Welch t-test | 20 | 20 | 1.0000 | 0.8389 | 1.0000 | 3.18e-07 | 2.62e-07 | 0.0504 |
+| 0.0500 | 100000 | 100000 (User Level) | Mann-Whitney U | 20 | 0 | 0.0000 | 0.0000 | 0.1611 | 0.3925 | 0.3878 | 0.0504 |
+
+*The 95% Wilson confidence intervals quantify uncertainty across the 20 treatment draws for each configuration. Because the alternative simulations keep one A/B split fixed, these intervals do not capture variation across different randomized splits.*
 
 #### Figure 5. Empirical Power vs. Number of Buckets Across Target Uplifts
 ![Figure 5: Power vs Bucket Count](results/plots/figure5_rejection_vs_delta.png)
 
 **Interpretation of Figure 5**:
 - **Visual Rule**: We need empirical power to be **above the red line** ($\ge 80\%$ target power) for dependable detection under $H_1$.
+- **Uncertainty**: The translucent bands show 95% Wilson intervals. Compare both point estimates and uncertainty before selecting a bucket count.
 - At marginal uplifts ($+2.0\%$ to $+2.6\%$), an inverted-U shape is visible: only optimal bucket counts cross above $80\%$.
 
 #### Figure 6. Median Test p-Value vs. Number of Buckets Across Target Uplifts
@@ -294,6 +299,7 @@
 
 **Interpretation of Figure 7**:
 - **Visual Rule**: We need power curves to cross **above the red line** (>= 80%). The x-intercept where each curve crosses 80% is its **Minimum Detectable Effect (MDE)**.
+- **Uncertainty**: Shaded Wilson intervals indicate how precise each power estimate is with the configured number of repetitions. MDE interpolation itself does not include a confidence interval.
 
 
 ---
@@ -311,6 +317,7 @@
 ## 6. Limitations
 1. **Synthetic Intervention**: Additions in Group B are sampled from empirical transactions; true behavioral responses in production may differ.
 2. **Static Window**: Analysis reflects a 30-day snapshot; longer observation windows may have lower zero-revenue fractions.
+3. **Monte Carlo Precision**: Wilson intervals cover the finite number of treatment draws, conditional on one fixed A/B split. More repetitions and fresh splits are needed for robust, unconditional power and MDE estimates.
 
 ---
 

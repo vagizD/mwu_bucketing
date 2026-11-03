@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A/B Testing on Zero-Inflated Revenue — Bucketization & Non-Parametric Power</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --card-bg: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-light: #64748b;
+      
+      --blue: #2563eb;
+      --blue-subtle: #eff6ff;
+      --blue-border: #bfdbfe;
+      
+      --emerald: #059669;
+      --emerald-subtle: #ecfdf5;
+      --emerald-border: #a7f3d0;
+      
+      --amber: #d97706;
+      --amber-subtle: #fffbeb;
+      --amber-border: #fde68a;
+      
+      --red: #dc2626;
+      --red-subtle: #fef2f2;
+      --red-border: #fecaca;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0b0f19;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Presentation Deck Container */
+    #deck-wrapper {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Progress Bar */
+    #progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: var(--blue);
+      width: 0%;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+
+    /* Slide Element */
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 44px 56px 40px 56px;
+      display: none;
+      flex-direction: column;
+      background: var(--surface);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Header Region */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slide-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .badge.blue {
+      background: var(--blue-subtle);
+      color: var(--blue);
+      border-color: var(--blue-border);
+    }
+
+    .badge.emerald {
+      background: var(--emerald-subtle);
+      color: var(--emerald);
+      border-color: var(--emerald-border);
+    }
+
+    .badge.amber {
+      background: var(--amber-subtle);
+      color: var(--amber);
+      border-color: var(--amber-border);
+    }
+
+    .badge.red {
+      background: var(--red-subtle);
+      color: var(--red);
+      border-color: var(--red-border);
+    }
+
+    /* Slide Content Grid */
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+
+    /* Graphic Displays */
+    .figure-container {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .figure-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    /* Micro Takeaways (Strictly <= 5 words per item) */
+    .takeaway-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .takeaway-pill {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .pill-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .pill-icon.blue { background: var(--blue-subtle); color: var(--blue); }
+    .pill-icon.emerald { background: var(--emerald-subtle); color: var(--emerald); }
+    .pill-icon.amber { background: var(--amber-subtle); color: var(--amber); }
+    .pill-icon.red { background: var(--red-subtle); color: var(--red); }
+
+    .takeaway-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    /* Diagram Styles */
+    .schematic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    .schematic-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .step-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+    }
+
+    .step-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .step-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Slide Navigation Footer */
+    .deck-footer {
+      position: absolute;
+      bottom: 12px;
+      left: 56px;
+      right: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-light);
+      pointer-events: none;
+    }
+
+    /* Controls Bar at bottom screen */
+    #controls {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .btn-ctrl {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-ctrl:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    /* Title Slide Specifics */
+    .title-slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      max-width: 900px;
+    }
+
+    .title-headline {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text-main);
+    }
+
+    .title-subline {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .title-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .meta-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    .meta-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Tables in Appendix */
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--card-bg);
+      padding: 10px 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+
+    td {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+    }
+
+    tr:nth-child(even) td {
+      background: #fafbfc;
+    }
+
+    /* Print View */
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+      }
+      #controls { display: none; }
+      #deck-wrapper {
+        box-shadow: none;
+        border-radius: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        page-break-after: always;
+        position: relative;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Presentation Container (16:9 Aspect Ratio) -->
+  <div id="deck-wrapper">
+    <div id="progress-bar"></div>
+
+    <!-- Slide 1: Title Slide -->
+    <div class="slide active" data-index="1">
+      <div class="title-slide-content">
+        <div class="header-badges">
+          <span class="badge blue">AIPI 510</span>
+          <span class="badge">E-COMMERCE INFERENCE</span>
+          <span class="badge">2026 BENCHMARK</span>
+        </div>
+        <div class="title-headline">
+          A/B Testing on Zero-Inflated Revenue
+        </div>
+        <div class="title-subline">
+          Why Mann-Whitney U Fails on User-Level Data and How Bucketization Restores Power
+        </div>
+        <div class="title-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Design Aesthetic</span>
+            <span class="meta-value">Linear / Stripe Technical Slate</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Cohort Population</span>
+            <span class="meta-value">200,000 Customers (100k A / 100k B)</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Primary Challenge</span>
+            <span class="meta-value">65.0% Zero Purchases & Severe Ties</span>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Duke University · Statistical Data Analysis</span>
+        <span>Slide 1 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 2: The Problem (3a) -->
+    <div class="slide" data-index="2">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 1 · Production Dilemma</div>
+          <div class="slide-title">Retail Recommender Upgrade: The Zero-Inflation Trap</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge">H0: E[RB] = E[RA]</span>
+          <span class="badge blue">H1: E[RB] > E[RA]</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div class="figure-container">
+          <img src="../results/plots/pres_figure1_mwu_failure.png" alt="Figure 1: Zero-Inflation and MWU Breakdown">
+        </div>
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon red">✕</div>
+            <div class="takeaway-text">65% users spend nothing.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon red">✕</div>
+            <div class="takeaway-text">Welch assumes non-existent normality.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon amber">!</div>
+            <div class="takeaway-text">Zero-ties destroy rank tests.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">→</div>
+            <div class="takeaway-text">Obvious uplift remains undetected.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Figure 1: Real E-Commerce Baseline vs. User-Level Detection Failure</span>
+        <span>Slide 2 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 3: The Solution - Bucketization & CLT (3b) -->
+    <div class="slide" data-index="3">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 2 · Distribution Transformation</div>
+          <div class="slide-title">Bucketization: Eliminating Zero-Ties via CLT</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge emerald">Zero Ties: 0.0%</span>
+          <span class="badge blue">Expectation Conserved</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <!-- Visual Schematic -->
+        <div class="schematic-grid">
+          <div class="schematic-step">
+            <span class="step-badge">1. Raw Cohort</span>
+            <span class="step-title">100,000 Users</span>
+            <span class="step-desc">65.0% zeros · skew=3.0</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">2. Deterministic Hash</span>
+            <span class="step-title">Random Partition</span>
+            <span class="step-desc">hash(user_id) mod K</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">3. Aggregation</span>
+            <span class="step-title">Sum per Bucket</span>
+            <span class="step-desc">0.0% zero ties</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">4. Inference</span>
+            <span class="step-title">Gaussian CLT</span>
+            <span class="step-desc">Enables valid inference</span>
+          </div>
+        </div>
+        <div class="figure-container">
+          <img src="../results/plots/pres_figure2_bucketization.png" alt="Figure 2: Bucketization Diagnostics">
+        </div>
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">Aggregates eliminate zero ties.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">CLT restores approximate normality.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">✓</div>
+            <div class="takeaway-text">Bucket sums preserve expectations.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">✓</div>
+            <div class="takeaway-text">Small K enables Welch.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Figure 2: Distribution Comparison across Monotonic Bucket Counts</span>
+        <span>Slide 3 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 4: Synthetic Uplift Injection (3c) -->
+    <div class="slide" data-index="4">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 3 · Pre-Experiment Simulation</div>
+          <div class="slide-title">Calibrated Synthetic Treatment Injection</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge blue">E[Realized Uplift] = delta</span>
+          <span class="badge">Activity Weighted</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <!-- Visual Schematic -->
+        <div class="schematic-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 10px;">
+          <div class="schematic-step">
+            <span class="step-badge">User Activity</span>
+            <span class="step-title">30-Day Purchase Counts</span>
+            <span class="step-desc">A_i = historical volume</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">Activity Weight</span>
+            <span class="step-title">Targeting Probabilities</span>
+            <span class="step-desc">w_i ∝ A_i + ε</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">Price Bootstrap</span>
+            <span class="step-title">Empirical Catalog Items</span>
+            <span class="step-desc">P_j ~ Empirical Pool</span>
+          </div>
+          <div class="schematic-step">
+            <span class="step-badge">Guarantee</span>
+            <span class="step-title">Exact Expected Lift</span>
+            <span class="step-desc">E[ΔR] = δ · R_total</span>
+          </div>
+        </div>
+
+        <div style="flex: 1; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 28px 36px; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main);">
+            Why simulate treatment prior to production rollout?
+          </div>
+          <div style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+            Evaluating tests on historical A/A data only verifies Type I error (null calibration). To determine whether a test can reliably detect true commercial shifts, we inject synthetic purchases conditioned on realistic user behavior before live exposure.
+          </div>
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <span class="badge blue">Full mathematical derivation in Appendix A</span>
+            <span class="badge emerald">6/6 Validation Unit Tests Passing</span>
+          </div>
+        </div>
+
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">→</div>
+            <div class="takeaway-text">Simulate before live deployment.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">→</div>
+            <div class="takeaway-text">Weight by customer activity.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">→</div>
+            <div class="takeaway-text">Sample empirical item prices.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">Guarantees exact expected uplift.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Pre-Experiment Power Methodology · Synthetic Behavioral Perturbation</span>
+        <span>Slide 4 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 5: P-Value vs # of Buckets (3d) -->
+    <div class="slide" data-index="5">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 4 · Detection Window</div>
+          <div class="slide-title">P-Value vs. Number of Buckets (Target Uplift δ = +2.3%)</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge emerald">Optimal Zone: K ∈ [50, 1000]</span>
+          <span class="badge red">Threshold: α = 0.05</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div class="figure-container">
+          <img src="../results/plots/pres_figure4_pvalues.png" alt="Figure 4: P-Values vs # of Buckets">
+        </div>
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon red">✕</div>
+            <div class="takeaway-text">Under-bucketing lacks sample size.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon red">✕</div>
+            <div class="takeaway-text">Over-bucketing restores zero-ties.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">K in [50, 1000] succeeds.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon amber">!</div>
+            <div class="takeaway-text">Never tune on live-data.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Figure 4: Empirical P-Value Curve under True Positive Treatment (δ = +2.3%)</span>
+        <span>Slide 5 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 6: Power vs Uplift & Significance Calibration (3e) -->
+    <div class="slide" data-index="6">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 5 · Pre-Experiment Decision Criteria</div>
+          <div class="slide-title">Power Curves & Significance Calibration Across K</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge blue">Target Power ≥ 80%</span>
+          <span class="badge">Nominal α = 0.05</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div class="figure-container">
+          <img src="../results/plots/pres_figure5_power_significance.png" alt="Figure 5: Power vs Uplift and Significance Calibration">
+        </div>
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">Significance calibrated across all K.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">K=100-1000 minimizes MDE (2.26%).</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon red">✕</div>
+            <div class="takeaway-text">User-level MDE exceeds 5%.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">→</div>
+            <div class="takeaway-text">Select K minimizing MDE.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Figure 5: Rejection Rate under H1 (Power) and H0 (Type I Error with 95% Wilson CIs)</span>
+        <span>Slide 6 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 7: Conclusion (3f) -->
+    <div class="slide" data-index="7">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Stage 6 · Executive Summary</div>
+          <div class="slide-title">Conclusion: Principles for Production Experimentation</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge emerald">Actionable Blueprint</span>
+        </div>
+      </div>
+      <div class="slide-content" style="justify-content: center;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: auto 0;">
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--red); margin-bottom: 12px; text-transform: uppercase; font-family: 'JetBrains Mono', monospace;">
+              The Failure Modes
+            </div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon red">✕</span>
+                <span style="font-size: 15px; font-weight: 700;">Real metrics violate textbook assumptions.</span>
+              </li>
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon red">✕</span>
+                <span style="font-size: 15px; font-weight: 700;">Zero-ties destroy rank tests.</span>
+              </li>
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon red">✕</span>
+                <span style="font-size: 15px; font-weight: 700;">User-level analysis misses uplift.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div style="background: var(--blue-subtle); border: 1px solid var(--blue-border); border-radius: 8px; padding: 24px;">
+            <div style="font-size: 14px; font-weight: 800; color: var(--blue); margin-bottom: 12px; text-transform: uppercase; font-family: 'JetBrains Mono', monospace;">
+              The Recommended Solution
+            </div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon emerald">✓</span>
+                <span style="font-size: 15px; font-weight: 700;">Bucketing restores statistical power.</span>
+              </li>
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon emerald">✓</span>
+                <span style="font-size: 15px; font-weight: 700;">Pre-simulate optimal bucket count.</span>
+              </li>
+              <li style="display: flex; gap: 10px; align-items: center;">
+                <span class="pill-icon emerald">✓</span>
+                <span style="font-size: 15px; font-weight: 700;">Pipeline generalizes to any metric.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">1</div>
+            <div class="takeaway-text">Real data violates textbook normality.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">2</div>
+            <div class="takeaway-text">Zero-ties destroy rank tests.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">3</div>
+            <div class="takeaway-text">Bucketing restores statistical power.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">4</div>
+            <div class="takeaway-text">Pre-simulate optimal bucket count.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">5</div>
+            <div class="takeaway-text">Pipeline generalizes to any metric.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Strategic Takeaways for E-Commerce Platforms</span>
+        <span>Slide 7 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 8: Thank You & Real-World Impact (3g) -->
+    <div class="slide" data-index="8">
+      <div class="title-slide-content" style="align-items: center; text-align: center; max-width: 960px; margin: auto;">
+        <div class="header-badges">
+          <span class="badge emerald">COMPLETE PIPELINE VALIDATED</span>
+          <span class="badge blue">OPEN SOURCE REPO</span>
+        </div>
+        <div class="title-headline" style="font-size: 48px;">
+          Thank You
+        </div>
+        <div style="font-size: 24px; font-weight: 700; color: var(--blue); letter-spacing: -0.02em; padding: 12px 24px; background: var(--blue-subtle); border: 1px solid var(--blue-border); border-radius: 8px;">
+          "We hope that you learned from real-world scenario"
+        </div>
+        <div class="title-subline" style="font-size: 16px; max-width: 800px;">
+          Not just a classroom exercise — this methodology equips machine learning and data science engineers with a principled blueprint to diagnose and conquer severe zero-inflation in live experimentation platforms.
+        </div>
+        <div class="header-badges" style="margin-top: 12px;">
+          <span class="badge">github.com/vagizD/mwu_bucketing</span>
+          <span class="badge">Reproducible Simulation Suite</span>
+          <span class="badge">Q&A Session</span>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>AIPI 510 · Module Project 2</span>
+        <span>Slide 8 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 9: Appendix A - Math Modeling of Treatment -->
+    <div class="slide" data-index="9">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Appendix A · Mathematical Formulation</div>
+          <div class="slide-title">Mathematical Modeling of Synthetic Treatment Injection</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge blue">Mathematical Rigor</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1;">
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; font-family: 'Inter', sans-serif;">
+              1. Activity Weighting & Purchase Intensity
+            </div>
+            Let user i ∈ B have observed activity count A_i.<br><br>
+            w_i = (A_i + ε) / ∑_j (A_j + ε)<br><br>
+            λ_i = λ_0 · w_i · N_B<br><br>
+            where λ_0 is the base expected transaction intensity and N_B = 100,000.<br><br>
+            K_i ~ Poisson(λ_i) = extra items purchased by user i.
+          </div>
+
+          <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--emerald); margin-bottom: 8px; font-family: 'Inter', sans-serif;">
+              2. Expectation Calibration Proof
+            </div>
+            Extra spend for user i:<br>
+            ΔR_i = ∑_{m=1}^{K_i} P_{i,m}, where P ~ F_empirical<br><br>
+            Expected added revenue across Group B:<br>
+            E[ΔR_B] = ∑_{i ∈ B} E[K_i] · E[P] = ∑_{i ∈ B} λ_i · P_bar<br>
+            = P_bar · λ_0 · N_B<br><br>
+            Setting λ_0 = (δ · R_B^base) / (N_B · P_bar) guarantees:<br>
+            <strong>E[ΔR_B] = δ · R_B^base (Exact Expectation)</strong>
+          </div>
+        </div>
+        <div class="takeaway-bar">
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">✓</div>
+            <div class="takeaway-text">Activity weighted purchase Poisson.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon blue">✓</div>
+            <div class="takeaway-text">Empirical item price bootstrap.</div>
+          </div>
+          <div class="takeaway-pill">
+            <div class="pill-icon emerald">✓</div>
+            <div class="takeaway-text">Analytic expectation equals delta.</div>
+          </div>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Appendix A: Synthetic Behavioral Treatment Mechanism</span>
+        <span>Slide 9 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 10: Appendix B - Hyperparameters Table -->
+    <div class="slide" data-index="10">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Appendix B · Pipeline Configuration</div>
+          <div class="slide-title">Hyperparameter Reference (conf.toml)</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge">Production Config</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Hyperparameter</th>
+                <th>Benchmark Value</th>
+                <th>Section</th>
+                <th>Production Importance in Other Applications</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>max_users</strong></td>
+                <td>200,000</td>
+                <td>[data]</td>
+                <td>Governs total test population (100k per arm); dictates statistical precision and degrees of freedom.</td>
+              </tr>
+              <tr>
+                <td><strong>bucket_counts</strong></td>
+                <td>[10..100000]</td>
+                <td>[buckets]</td>
+                <td>Monotonic evaluation grid; determines aggregation trade-off between CLT normality and zero-tie suppression.</td>
+              </tr>
+              <tr>
+                <td><strong>activity_smoothing_epsilon</strong></td>
+                <td>0.01</td>
+                <td>[treatment]</td>
+                <td>Laplace smoothing parameter preventing inactive (zero-activity) users from having strictly zero purchase probability.</td>
+              </tr>
+              <tr>
+                <td><strong>uplifts (deltas)</strong></td>
+                <td>[0.005..0.050]</td>
+                <td>[treatment]</td>
+                <td>Realistic retail effect sizes (+0.5% to +5.0%) spanning sub-MDE to easily detectable zones.</td>
+              </tr>
+              <tr>
+                <td><strong>null_repetitions</strong></td>
+                <td>50</td>
+                <td>[simulation]</td>
+                <td>Independent fresh A/B splits to verify nominal Type I error calibration (alpha = 0.05) with 95% Wilson CIs.</td>
+              </tr>
+              <tr>
+                <td><strong>alt_repetitions</strong></td>
+                <td>20</td>
+                <td>[simulation]</td>
+                <td>Independent Monte Carlo simulations per uplift grid point to estimate empirical power curves.</td>
+              </tr>
+              <tr>
+                <td><strong>significance_level</strong></td>
+                <td>0.05</td>
+                <td>[simulation]</td>
+                <td>Two-sided nominal significance threshold for rejecting the null hypothesis H0.</td>
+              </tr>
+              <tr>
+                <td><strong>power_target</strong></td>
+                <td>0.80</td>
+                <td>[simulation]</td>
+                <td>Industry benchmark power (80%) used as the horizontal intercept to determine Minimum Detectable Effect (MDE).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Appendix B: Configuration and Sensitivity Parameters</span>
+        <span>Slide 10 / 11</span>
+      </div>
+    </div>
+
+    <!-- Slide 11: Appendix C - Diagnostic Data Table -->
+    <div class="slide" data-index="11">
+      <div class="slide-header">
+        <div class="header-left">
+          <div class="slide-eyebrow">Appendix C · Empirical Summary</div>
+          <div class="slide-title">Full Diagnostics & Estimated MDE by Aggregation Level</div>
+        </div>
+        <div class="header-badges">
+          <span class="badge emerald">Optimal K = 100 - 1000</span>
+        </div>
+      </div>
+      <div class="slide-content">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Aggregation Level</th>
+                <th>Bucket Count (K)</th>
+                <th>Zero Share</th>
+                <th>Normality p-value</th>
+                <th>Normality Status</th>
+                <th>MWU FPR (α=0.05)</th>
+                <th>Single-Run p (δ=+2.3%)</th>
+                <th>Estimated MDE (Power=80%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>10 Buckets</td>
+                <td>10</td>
+                <td>0.0%</td>
+                <td>0.6868</td>
+                <td>Holds (p ≥ 0.05)</td>
+                <td>0.040 [0.011, 0.135]</td>
+                <td>0.0640 (Fail)</td>
+                <td>+2.70%</td>
+              </tr>
+              <tr>
+                <td>50 Buckets</td>
+                <td>50</td>
+                <td>0.0%</td>
+                <td>0.0792</td>
+                <td>Holds (p ≥ 0.05)</td>
+                <td>0.060 [0.021, 0.162]</td>
+                <td>0.0189 (Pass)</td>
+                <td>+2.50%</td>
+              </tr>
+              <tr style="background: #ecfdf5; font-weight: 700;">
+                <td><strong>100 Buckets</strong></td>
+                <td><strong>100</strong></td>
+                <td><strong>0.0%</strong></td>
+                <td><strong>0.0347</strong></td>
+                <td><strong>Marginal</strong></td>
+                <td><strong>0.020 [0.004, 0.105]</strong></td>
+                <td><strong>0.0318 (Pass)</strong></td>
+                <td><strong>+2.26% (Optimal)</strong></td>
+              </tr>
+              <tr>
+                <td>500 Buckets</td>
+                <td>500</td>
+                <td>0.0%</td>
+                <td>0.0003</td>
+                <td>Rejected</td>
+                <td>0.040 [0.011, 0.135]</td>
+                <td>0.0233 (Pass)</td>
+                <td>+2.45%</td>
+              </tr>
+              <tr style="background: #ecfdf5; font-weight: 700;">
+                <td><strong>1000 Buckets</strong></td>
+                <td><strong>1000</strong></td>
+                <td><strong>0.0%</strong></td>
+                <td><strong>0.0000</strong></td>
+                <td><strong>Rejected</strong></td>
+                <td><strong>0.020 [0.004, 0.105]</strong></td>
+                <td><strong>0.0252 (Pass)</strong></td>
+                <td><strong>+2.27% (Optimal)</strong></td>
+              </tr>
+              <tr>
+                <td>5000 Buckets</td>
+                <td>5000</td>
+                <td>0.0%</td>
+                <td>0.0000</td>
+                <td>Rejected</td>
+                <td>0.040 [0.011, 0.135]</td>
+                <td>0.0805 (Fail)</td>
+                <td>+2.85%</td>
+              </tr>
+              <tr>
+                <td>10000 Buckets</td>
+                <td>10000</td>
+                <td>0.0%</td>
+                <td>0.0000</td>
+                <td>Rejected</td>
+                <td>0.020 [0.004, 0.105]</td>
+                <td>0.1505 (Fail)</td>
+                <td>+2.73%</td>
+              </tr>
+              <tr style="background: #fef2f2; color: #991b1b;">
+                <td><strong>User-Level (Raw)</strong></td>
+                <td><strong>100000</strong></td>
+                <td><strong>65.0%</strong></td>
+                <td><strong>0.0000</strong></td>
+                <td><strong>Severely Rejected</strong></td>
+                <td><strong>0.040 [0.011, 0.135]</strong></td>
+                <td><strong>0.9652 (Total Failure)</strong></td>
+                <td><strong>> +5.00% (Undetectable)</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="deck-footer">
+        <span>Appendix C: Consolidated Results across Monotonic Bucket Grid</span>
+        <span>Slide 11 / 11</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div id="controls">
+    <button class="btn-ctrl" onclick="prevSlide()">← Prev (Left Arrow)</button>
+    <button class="btn-ctrl" onclick="nextSlide()">Next (Right Arrow / Space) →</button>
+    <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 11</span>
+    <button class="btn-ctrl" onclick="toggleFullScreen()">Toggle Fullscreen (F)</button>
+    <button class="btn-ctrl" onclick="window.print()">Print / PDF (Ctrl+P)</button>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 11;
+
+    function showSlide(index) {
+      if (index < 1) index = 1;
+      if (index > totalSlides) index = totalSlides;
+      currentSlide = index;
+
+      document.querySelectorAll('.slide').forEach(slide => {
+        slide.classList.remove('active');
+        if (parseInt(slide.getAttribute('data-index')) === currentSlide) {
+          slide.classList.add('active');
+        }
+      });
+
+      document.getElementById('slide-num').innerText = currentSlide;
+      document.getElementById('progress-bar').style.width = ((currentSlide - 1) / (totalSlides - 1) * 100) + '%';
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) showSlide(currentSlide - 1);
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard bindings
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        showSlide(1);
+      } else if (e.key === 'End') {
+        showSlide(totalSlides);
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    // Touch/swipe support
+    let startX = 0;
+    document.addEventListener('touchstart', (e) => {
+      startX = e.changedTouches[0].screenX;
+    });
+    document.addEventListener('touchend', (e) => {
+      let diff = e.changedTouches[0].screenX - startX;
+      if (diff < -50) nextSlide();
+      if (diff > 50) prevSlide();
+    });
+  </script>
+</body>
+</html>
