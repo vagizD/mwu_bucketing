@@ -66,20 +66,30 @@
 
 ### Slide 7: Significance: A/A False Positive Rate
 - **Title**: Significance: A/A False Positive Rate
-- **Figure**: [pres_figure4_pvalues.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure4_pvalues.png)
+- **Figure**: [pres_figure4_significance.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure4_significance.png)
 - Single plot showing False Positive Rate across $K$ under the null ($\text{Uplift} = 0\%$, $N=50$ repetitions, 95% Wilson CIs).
 
 ---
 
-### Slide 8: Statistical Power: A/B Detection Performance
-- **Title**: Statistical Power: A/B Detection Performance
-- **Figure**: [pres_figure5_power_significance.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure5_power_significance.png)
-- Panel A: P-value vs # of Buckets (B has +2.3% Lift). Shows user-level blindness ($p=0.965$) vs bucket sensitivity ($p=0.032$).
-- Panel B: Power vs. Uplift (B has Lift). Shaded regions show 95% Wilson CIs; vertical line at $\delta = 2.3\%$.
+### Slide 8: P-value vs # of Buckets (B has +2.3% Lift)
+- **Title**: P-value vs # of Buckets (B has +2.3% Lift)
+- **Figure**: [pres_figure5a_pvalues.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure5a_pvalues.png)
+- Single plot showing P-value curve across $K$ under true treatment $\delta = +2.3\%$:
+  - Mann-Whitney U fails at user-level ($p=0.965$).
+  - Buckets successfully detect lift ($p=0.032$ at $K=100$).
 
 ---
 
-### Slide 9: Optimal Bucket Count
+### Slide 9: Statistical Power vs. Uplift (B has Lift)
+- **Title**: Statistical Power vs. Uplift (B has Lift)
+- **Figure**: [pres_figure5b_power_uplift.png](file:///home/vagiz/Desktop/desktop_vagiz/duke/sda/project2/results/plots/pres_figure5b_power_uplift.png)
+- Single plot showing empirical power curves across uplifts with 95% Wilson CIs:
+  - Vertical dotted line at $\delta = 2.3\%$.
+  - Horizontal reference line at $80\%$ target power.
+
+---
+
+### Slide 10: Optimal Bucket Count
 - **Title**: Optimal Bucket Count
 - **Process Sequence**:
   $$\text{A/B Experiment} \longrightarrow \text{Non-normal Data} \longrightarrow \text{Bucketization } (K^* \approx 100\text{--}1000) \longrightarrow \text{Mann-Whitney U}$$
@@ -90,7 +100,7 @@
 
 ---
 
-### Slide 10: Modeling Caveats
+### Slide 11: Modeling Caveats
 - **Title**: Modeling Caveats
 - **Key Points**:
   - Monte-Carlo Resolution (number of uplift runs).
@@ -99,14 +109,14 @@
 
 ---
 
-### Slide 11: Thank You
+### Slide 12: Thank You
 - **Title**: Thank you
 - **Subtitle**: Remember us once you get in large-scale
 - Vagiz Daudov · Konur Nordberg · Duke University
 
 ---
 
-### Slide 12: Appendix: Treatment Injection Modeling
+### Slide 13: Appendix: Treatment Injection Modeling
 - **Title**: Appendix: Treatment Injection Modeling
 - **Formulas**:
   - Activity Weighting:
@@ -131,7 +141,7 @@
 
 ---
 
-### Slide 13: Appendix: Diagnostic Table
+### Slide 14: Appendix: Diagnostic Table
 | Aggregation Level | $K$ | Normality Status | MWU FPR ($\alpha=0.05$) [95% CI] | Single-run $p$ ($\delta=+2.3\%$) | Estimated MDE ($\text{Power}=80\%$) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | 10 Buckets | 10 | **Holds** | 0.040 [0.011, 0.135] | 0.0640 (Rejected) | +2.70% |

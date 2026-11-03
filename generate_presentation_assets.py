@@ -174,40 +174,48 @@ def make_pres_figure_4(out_path: Path):
     plt.close()
 
 
-def make_pres_figure_5(out_path: Path):
-    """Figure 5 for Slide 8: Both A/B Plots - Panel A: P-value vs K (B has +2.3% Lift), Panel B: Power vs Uplift."""
+def make_pres_figure_5a(out_path: Path):
+    """Figure 5a for Slide 8: P-value vs # of Buckets (B has +2.3% Lift)."""
     df_single = pd.read_csv("results/tables/table4_single_run.csv")
     df_single["K"] = df_single["Aggregation Level"].apply(lambda s: int(s.split()[0]))
-    df_power = pd.read_csv("results/tables/table5_power_summary.csv")
 
-    fig, (ax_pval, ax_power) = plt.subplots(1, 2, figsize=(14.5, 4.8), dpi=180)
+    fig, ax = plt.subplots(figsize=(9, 4.4), dpi=180)
 
-    # Panel A: P-value vs # of Buckets (B has +2.3% Lift)
     mwu_data = df_single[df_single["Test"] == "Mann-Whitney U"].sort_values("K")
     welch_data = df_single[df_single["Test"] == "Welch t-test"].sort_values("K")
 
     x_labels = [f"{k}" if k < 100000 else "User-Level" for k in mwu_data["K"]]
     x_pos = np.arange(len(mwu_data))
 
-    ax_pval.plot(x_pos, mwu_data["p-value"], "o-", color="#d97706", linewidth=2.2, markersize=6.5, label="Mann-Whitney U")
-    ax_pval.plot(x_pos[:-1], welch_data["p-value"], "s--", color="#2563eb", linewidth=1.8, markersize=5.5, label="Welch t-test")
+    ax.plot(x_pos, mwu_data["p-value"], "o-", color="#d97706", linewidth=2.2, markersize=7, label="Mann-Whitney U")
+    ax.plot(x_pos[:-1], welch_data["p-value"], "s--", color="#2563eb", linewidth=1.8, markersize=6, label="Welch t-test")
 
-    ax_pval.axhline(0.05, color="#dc2626", linestyle="--", linewidth=1.6, label="alpha = 0.05")
+    ax.axhline(0.05, color="#dc2626", linestyle="--", linewidth=1.6, label="Significance alpha = 0.05")
 
     for x, p in zip(x_pos, mwu_data["p-value"]):
         offset = 0.045 if p < 0.2 else -0.065
-        ax_pval.text(x, p + offset, f"{p:.3f}", ha="center", fontsize=8.5, fontweight="bold", color="#92400e")
+        ax.text(x, p + offset, f"{p:.3f}", ha="center", fontsize=8.8, fontweight="bold", color="#92400e")
 
-    ax_pval.set_xticks(x_pos)
-    ax_pval.set_xticklabels(x_labels, fontsize=9.0)
-    ax_pval.set_xlabel("Number of Buckets", fontsize=11, fontweight="bold")
-    ax_pval.set_ylabel("P-value", fontsize=11, fontweight="bold")
-    ax_pval.set_title("P-value vs # of Buckets (B has +2.3% Lift)", fontsize=12, fontweight="bold")
-    ax_pval.set_ylim(-0.02, 1.05)
-    ax_pval.grid(True, linestyle=":", alpha=0.5)
-    ax_pval.legend(loc="upper left", fontsize=8.8)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(x_labels, fontsize=9.5)
+    ax.set_xlabel("Number of Buckets", fontsize=11, fontweight="bold")
+    ax.set_ylabel("P-value", fontsize=11, fontweight="bold")
+    ax.set_title("P-value vs # of Buckets (B has +2.3% Lift)", fontsize=13, fontweight="bold")
+    ax.set_ylim(-0.02, 1.05)
+    ax.grid(True, linestyle=":", alpha=0.5)
+    ax.legend(loc="upper left", fontsize=9.5)
 
-    # Panel B: Power vs Uplift
+    plt.tight_layout()
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+
+
+def make_pres_figure_5b(out_path: Path):
+    """Figure 5b for Slide 9: Statistical Power vs Uplift (with Wilson CIs and vertical 2.3% line)."""
+    df_power = pd.read_csv("results/tables/table5_power_summary.csv")
+
+    fig, ax = plt.subplots(figsize=(9, 4.4), dpi=180)
+
     highlight_k = [10, 50, 100, 1000, 10000, 100000]
     colors = ["#2563eb", "#059669", "#16a34a", "#854d0e", "#64748b", "#dc2626"]
     deltas = sorted(df_power["Target Uplift (delta)"].unique())
@@ -219,26 +227,25 @@ def make_pres_figure_5(out_path: Path):
         ci_u = sub["95% CI Upper"].values
         k_lbl = f"K = {k}" if k < 100000 else "User-Level"
         
-        ax_power.plot(deltas, powers, "o-", color=color, linewidth=2.0, markersize=5, label=f"MWU ({k_lbl})")
-        ax_power.fill_between(deltas, ci_l, ci_u, color=color, alpha=0.08, linewidth=0)
+        ax.plot(deltas, powers, "o-", color=color, linewidth=2.0, markersize=5.5, label=f"MWU ({k_lbl})")
+        ax.fill_between(deltas, ci_l, ci_u, color=color, alpha=0.08, linewidth=0)
 
     # Reference lines
-    ax_power.axhline(0.80, color="#dc2626", linestyle="--", linewidth=1.5, label="Power 80%")
-    ax_power.axvline(0.023, color="#0f172a", linestyle=":", linewidth=1.8, label="delta = 2.3%")
+    ax.axhline(0.80, color="#dc2626", linestyle="--", linewidth=1.5, label="Power 80%")
+    ax.axvline(0.023, color="#0f172a", linestyle=":", linewidth=1.8, label="delta = 2.3%")
 
-    ax_power.set_xscale("log")
-    ax_power.xaxis.set_major_locator(FixedLocator(deltas))
-    ax_power.xaxis.set_major_formatter(FixedFormatter([f"{d*100:.1f}%" for d in deltas]))
-    ax_power.minorticks_off()
-    ax_power.tick_params(axis='x', rotation=30)
-    ax_power.set_xlabel("Uplift", fontsize=11, fontweight="bold")
-    ax_power.set_ylabel("Power", fontsize=11, fontweight="bold")
-    ax_power.set_title("Statistical Power vs. Uplift", fontsize=12, fontweight="bold")
-    ax_power.set_ylim(-0.02, 1.05)
-    ax_power.grid(True, linestyle=":", alpha=0.5)
-    ax_power.legend(loc="lower right", fontsize=8.2)
+    ax.set_xscale("log")
+    ax.xaxis.set_major_locator(FixedLocator(deltas))
+    ax.xaxis.set_major_formatter(FixedFormatter([f"{d*100:.1f}%" for d in deltas]))
+    ax.minorticks_off()
+    ax.tick_params(axis='x', rotation=30)
+    ax.set_xlabel("Uplift", fontsize=11, fontweight="bold")
+    ax.set_ylabel("Power", fontsize=11, fontweight="bold")
+    ax.set_title("Statistical Power vs. Uplift (B has Lift)", fontsize=13, fontweight="bold")
+    ax.set_ylim(-0.02, 1.05)
+    ax.grid(True, linestyle=":", alpha=0.5)
+    ax.legend(loc="lower right", fontsize=8.5)
 
-    plt.suptitle("Statistical Power & Detection by Bucket Count (A/B Test)", fontsize=13, fontweight="bold", y=1.04)
     plt.tight_layout()
     plt.savefig(out_path, bbox_inches="tight")
     plt.close()
@@ -264,11 +271,16 @@ def main():
     print("Generating Figure 2 (Revenue Distribution by Number of Buckets)...")
     make_pres_figure_2(df_a, out_dir / "pres_figure2_bucketization.png")
 
-    print("Generating Figure 4 (P-value vs # of Buckets)...")
+    print("Generating Figure 4 (Significance vs # of Buckets)...")
+    make_pres_figure_4(out_dir / "pres_figure4_significance.png")
+    # Also overwrite legacy filename for backwards compatibility
     make_pres_figure_4(out_dir / "pres_figure4_pvalues.png")
 
-    print("Generating Figure 5 (Power and Significance by Bucket Count)...")
-    make_pres_figure_5(out_dir / "pres_figure5_power_significance.png")
+    print("Generating Figure 5a (P-value vs # of Buckets)...")
+    make_pres_figure_5a(out_dir / "pres_figure5a_pvalues.png")
+
+    print("Generating Figure 5b (Statistical Power vs Uplift)...")
+    make_pres_figure_5b(out_dir / "pres_figure5b_power_uplift.png")
 
     print("All presentation assets successfully generated!")
 
