@@ -154,6 +154,8 @@ The interpolated MDE also has no separate confidence interval.
 | run_pipeline.py | End-to-end orchestration and report generation |
 | tests/test_pipeline.py | Regression and statistical utility tests |
 | results/ | Published figures and tables |
+| presentation/ | Interactive HTML presentation deck and slide markdown |
+| generate_presentation_assets.py | Script generating presentation figures |
 | pipeline.md | Project design and research requirements |
 | result.md | Generated research report |
 
@@ -174,3 +176,8 @@ All main experiment settings live in **conf.toml**, including the random seed.
 Keep a copy of the exact configuration and record which baseline dataset was
 used for any results you report. The CSV tables make it possible to check
 individual numerical results independently of the plots.
+
+## Acknowledgments & AI Attribution
+
+- **Gemini 3.8 Flash** was used as an AI assistant for Python script coding and the interactive HTML presentation deck (`presentation/index.html`).
+- Experimental design, statistical hypothesis testing, simulation verification, and result interpretations were conducted and verified by the authors.
