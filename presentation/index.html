@@ -424,6 +424,89 @@
       background: #fafbfc;
     }
 
+    /* 8-Minute Countdown Timer Widget */
+    #deck-timer-widget {
+      position: absolute;
+      top: 14px;
+      right: 28px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      padding: 3px 6px;
+      border-radius: 20px;
+      z-index: 200;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .timer-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      transition: all 0.15s ease;
+    }
+
+    .timer-btn:hover {
+      background: var(--card-bg);
+    }
+
+    .timer-btn.reset {
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-left: 1px solid var(--border);
+      border-radius: 0 14px 14px 0;
+    }
+
+    .timer-btn.reset:hover {
+      color: var(--red);
+      background: var(--red-subtle);
+    }
+
+    .timer-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    #deck-timer-widget.running .timer-dot {
+      background: var(--emerald);
+      box-shadow: 0 0 6px rgba(5, 150, 105, 0.6);
+    }
+
+    #deck-timer-widget.warning #timer-display {
+      color: var(--amber);
+    }
+    #deck-timer-widget.warning .timer-dot {
+      background: var(--amber);
+    }
+
+    #deck-timer-widget.danger #timer-display {
+      color: var(--red);
+      font-weight: 800;
+    }
+    #deck-timer-widget.danger .timer-dot {
+      background: var(--red);
+      animation: timer-pulse 1s infinite;
+    }
+
+    @keyframes timer-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+
     /* Print View */
     @media print {
       body {
@@ -453,6 +536,17 @@
   <!-- Main Presentation Container (16:9 Aspect Ratio) -->
   <div id="deck-wrapper">
     <div id="progress-bar"></div>
+
+    <!-- 8-Minute Presentation Countdown Timer Widget -->
+    <div id="deck-timer-widget">
+      <button id="timer-toggle-btn" class="timer-btn" onclick="toggleTimer()" title="Start / Pause Timer (Press T)">
+        <span class="timer-dot"></span>
+        <span id="timer-display">08:00</span>
+      </button>
+      <button id="timer-reset-btn" class="timer-btn reset" onclick="resetTimer()" title="Reset back to 08:00 (Press R)">
+        ↺ Reset
+      </button>
+    </div>
 
     <!-- Slide 1: Title Slide -->
     <div class="slide active" data-index="1">
@@ -1127,15 +1221,105 @@
     <span style="margin: 0 10px;">Slide <strong id="slide-num" style="color: #ffffff;">1</strong> of 11</span>
     <button class="btn-ctrl" onclick="toggleFullScreen()">Toggle Fullscreen (F)</button>
     <button class="btn-ctrl" onclick="window.print()">Print / PDF (Ctrl+P)</button>
+    
+    <div style="display: flex; gap: 8px; align-items: center; margin-left: 14px; border-left: 1px solid #334155; padding-left: 14px;">
+      <span style="color: #94a3b8; font-size: 11px; text-transform: uppercase;">8m Limit:</span>
+      <button class="btn-ctrl" onclick="toggleTimer()" id="bottom-timer-toggle-btn">▶ Start</button>
+      <button class="btn-ctrl" onclick="resetTimer()">↺ Reset</button>
+    </div>
   </div>
 
   <script>
     let currentSlide = 1;
     const totalSlides = 11;
 
+    // 8-Minute Presentation Countdown Timer (480 seconds)
+    const INITIAL_TIME_SECONDS = 8 * 60;
+    let timeLeft = INITIAL_TIME_SECONDS;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+      const displayElem = document.getElementById('timer-display');
+      const widget = document.getElementById('deck-timer-widget');
+      const bottomBtn = document.getElementById('bottom-timer-toggle-btn');
+
+      if (timeLeft <= 0) {
+        displayElem.innerText = '00:00 (TIME)';
+      } else {
+        displayElem.innerText = formatTime(timeLeft);
+      }
+
+      if (isTimerRunning) {
+        widget.classList.add('running');
+        bottomBtn.innerText = '⏸ Pause';
+      } else {
+        widget.classList.remove('running');
+        bottomBtn.innerText = timeLeft <= 0 ? '↺ Finished' : '▶ Start';
+      }
+
+      widget.classList.remove('warning', 'danger');
+      if (timeLeft <= 60) {
+        widget.classList.add('danger');
+      } else if (timeLeft <= 120) {
+        widget.classList.add('warning');
+      }
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      if (timeLeft <= 0) timeLeft = INITIAL_TIME_SECONDS;
+      isTimerRunning = true;
+      updateTimerUI();
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerUI();
+        } else {
+          pauseTimer();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isTimerRunning = false;
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      updateTimerUI();
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      timeLeft = INITIAL_TIME_SECONDS;
+      updateTimerUI();
+    }
+
     function showSlide(index) {
       if (index < 1) index = 1;
       if (index > totalSlides) index = totalSlides;
+      
+      // Auto-start timer on first transition away from cover slide
+      if (index > 1 && !isTimerRunning && timeLeft === INITIAL_TIME_SECONDS) {
+        startTimer();
+      }
+
       currentSlide = index;
 
       document.querySelectorAll('.slide').forEach(slide => {
@@ -1179,6 +1363,10 @@
         showSlide(totalSlides);
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullScreen();
+      } else if (e.key === 't' || e.key === 'T') {
+        toggleTimer();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetTimer();
       }
     });
 
@@ -1192,6 +1380,9 @@
       if (diff < -50) nextSlide();
       if (diff > 50) prevSlide();
     });
+
+    // Initialize UI
+    updateTimerUI();
   </script>
 </body>
 </html>
